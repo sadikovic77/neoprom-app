@@ -378,8 +378,8 @@ function PositionEditor({ pos, onChange, onDelete, onDuplicate, onMoveUp, onMove
             {pos.width} × {pos.height} mm · {pos.quantity} {t.pieces}
           </div>
         </div>
-        <div className="w-20 h-20 shrink-0 bg-stone-50 border" style={{ borderColor: '#e5e5e0' }}>
-          <WindowDrawing pos={pos} size={80} />
+        <div className="w-28 h-28 shrink-0 bg-stone-50 border" style={{ borderColor: '#e5e5e0' }}>
+          <WindowDrawing pos={pos} size={110} />
         </div>
         {expanded ? <ChevronUp size={18} className="text-stone-400" /> : <ChevronDown size={18} className="text-stone-400" />}
       </div>
@@ -516,10 +516,7 @@ function PdfPreview({ doc, lang, currency, showPrices }) {
       <div className="px-12 pt-12 pb-8 print-page">
         <div className="flex justify-between items-start mb-8">
           <div>
-            <div className="w-20 h-20 mb-2 flex items-center justify-center" style={{ background: '#1f3a5f' }}>
-              <span style={{ color: 'white', fontFamily: 'Instrument Serif, serif', fontSize: '32px' }}>N</span>
-            </div>
-            <div className="text-[9px] tracking-[0.25em] font-semibold" style={{ color: '#1f3a5f' }}>NEOPROM ENGINEERING</div>
+            <img src="/neoprom-logo.svg" alt="Neoprom Engineering" style={{ height: '100px', display: 'block' }} />
           </div>
           <div className="text-right text-[10px] leading-snug">
             <div className="font-semibold text-[12px] mb-1">Neoprom Engineering Bugojno</div>
@@ -577,9 +574,9 @@ function PdfPreview({ doc, lang, currency, showPrices }) {
             <div className="w-12 shrink-0">
               <div className="text-2xl font-medium" style={{ fontFamily: 'Instrument Serif, serif' }}>{i + 1}</div>
             </div>
-            <div className="w-32 shrink-0">
+            <div className="w-56 shrink-0">
               <div className="aspect-square">
-                <WindowDrawing pos={p} size={130} />
+                <WindowDrawing pos={p} size={220} />
               </div>
             </div>
             <div className="flex-1 text-[10px] leading-relaxed">
@@ -731,7 +728,7 @@ export default function App() {
         <div className="border-b sticky top-0 z-10" style={{ background: '#fafaf7', borderColor: '#e5e5e0', printColorAdjust: 'exact' }}>
           <div className="px-6 py-3 flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7" style={{ background: '#1f3a5f' }}></div>
+              <img src="/neoprom-icon.svg" alt="Neoprom" style={{ height: '28px', display: 'block' }} />
               <div className="font-medium tracking-tight">Generator ponuda <span className="text-stone-400 text-xs ml-1">v0.1</span></div>
             </div>
             <div className="h-5 w-px bg-stone-300 mx-1"></div>
