@@ -656,39 +656,133 @@ function PdfPreview({ doc, lang, currency, showPrices }) {
 }
 
 // ===== GLAVNA APLIKACIJA =====
-const getInitialDoc = () => {
+const QUOTES_KEY = 'quotes';
+const CURRENT_ID_KEY = 'current-quote-id';
+
+const createEmptyDoc = () => ({
+  id: crypto.randomUUID(),
+  createdAt: Date.now(),
+  updatedAt: Date.now(),
+  number: `${new Date().getFullYear()}-001`,
+  date: new Date().toLocaleDateString('de-DE'),
+  customer: { name: '', address: '' },
+  positions: [],
+  netOverride: 0,
+});
+
+const loadStorage = () => {
   try {
-    const saved = localStorage.getItem('current-quote');
-    if (saved) return JSON.parse(saved);
+    const old = localStorage.getItem('current-quote');
+    if (old) {
+      const parsed = JSON.parse(old);
+      const now = Date.now();
+      const doc = { ...parsed, id: parsed.id || crypto.randomUUID(), createdAt: now, updatedAt: now };
+      localStorage.setItem(QUOTES_KEY, JSON.stringify([doc]));
+      localStorage.setItem(CURRENT_ID_KEY, doc.id);
+      localStorage.removeItem('current-quote');
+      return { quotes: [doc], currentId: doc.id };
+    }
+    const raw = localStorage.getItem(QUOTES_KEY);
+    const currentId = localStorage.getItem(CURRENT_ID_KEY);
+    if (raw) {
+      const quotes = JSON.parse(raw);
+      return { quotes, currentId: currentId || quotes[0]?.id };
+    }
   } catch {}
-  return {
-    id: crypto.randomUUID(),
-    number: `${new Date().getFullYear()}-0001`,
-    date: new Date().toLocaleDateString('de-DE'),
-    customer: { name: 'Dr. Kemal Karabeg', address: 'Nugle II 4B/12\n70230 Bugojno' },
-    positions: [
-      { ...newPosition('double'), width: 1500, height: 1200, quantity: 2, unitPrice: 480 },
-      { ...newPosition('windowDoor'), width: 1800, height: 2100, quantity: 1, unitPrice: 950 },
-      { ...newPosition('single'), width: 800, height: 1400, quantity: 3, unitPrice: 320 },
-    ],
-    netOverride: 0
-  };
+  const doc = createEmptyDoc();
+  return { quotes: [doc], currentId: doc.id };
 };
 
+function QuoteListItem({ quote, isActive, onSelect, onDelete }) {
+  const [confirm, setConfirm] = useState(false);
+  const total = quote.positions.reduce((s, p) => s + (p.unitPrice || 0) * (p.quantity || 1), 0);
+  return (
+    <div onClick={onSelect} className="px-3 py-2.5 border-b cursor-pointer"
+      style={{ borderColor: '#e5e5e0', background: isActive ? '#eff6ff' : 'white' }}>
+      <div className="flex items-start justify-between gap-1">
+        <div className="flex-1 min-w-0">
+          <div className="text-xs font-medium truncate"
+            style={{ color: isActive ? '#1f3a5f' : '#1a1a1a', fontFamily: 'Geist Mono, ui-monospace, monospace' }}>
+            {quote.number}
+          </div>
+          <div className="text-xs truncate text-stone-600">{quote.customer.name || '—'}</div>
+          <div className="text-[10px] text-stone-400 mt-0.5"
+            style={{ fontFamily: 'Geist Mono, ui-monospace, monospace' }}>
+            {fmt(total, 'KM')}
+          </div>
+        </div>
+        <div className="shrink-0 pt-0.5">
+          {confirm ? (
+            <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+              <button onClick={onDelete} className="text-[10px] text-red-600 px-1 hover:underline">Da</button>
+              <button onClick={() => setConfirm(false)} className="text-[10px] text-stone-400 px-1">Ne</button>
+            </div>
+          ) : (
+            <button onClick={e => { e.stopPropagation(); setConfirm(true); }}
+              className="text-stone-300 hover:text-red-500 p-0.5">
+              <Trash2 size={12} />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QuotesList({ quotes, currentId, onSelect, onNew, onDelete }) {
+  const [search, setSearch] = useState('');
+  const sorted = [...quotes].sort((a, b) => b.updatedAt - a.updatedAt);
+  const filtered = sorted.filter(q =>
+    q.customer.name.toLowerCase().includes(search.toLowerCase()) ||
+    q.number.toLowerCase().includes(search.toLowerCase())
+  );
+  return (
+    <div className="flex flex-col border-r overflow-hidden" style={{ borderColor: '#e5e5e0', background: 'white' }}>
+      <div className="p-3 border-b" style={{ borderColor: '#e5e5e0' }}>
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-[10px] uppercase tracking-wider text-stone-500">Sve ponude</div>
+          <button onClick={onNew} className="flex items-center gap-1 text-xs px-2 py-1 text-white"
+            style={{ background: '#1f3a5f' }}>
+            <Plus size={11} /> Nova
+          </button>
+        </div>
+        <input value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="Pretraga..." className="w-full px-2 py-1.5 border text-xs"
+          style={{ borderColor: '#d4d4cf' }} />
+      </div>
+      <div className="overflow-y-auto flex-1">
+        {filtered.length === 0 && (
+          <div className="text-xs text-stone-400 text-center py-6">Nema rezultata</div>
+        )}
+        {filtered.map(q => (
+          <QuoteListItem key={q.id} quote={q} isActive={q.id === currentId}
+            onSelect={() => onSelect(q.id)} onDelete={() => onDelete(q.id)} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
-  const [doc, setDoc] = useState(getInitialDoc);
+  const [quotes, setQuotes] = useState(() => loadStorage().quotes);
+  const [currentId, setCurrentId] = useState(() => loadStorage().currentId);
+  const doc = quotes.find(q => q.id === currentId) ?? quotes[0];
+  const setDoc = (newDoc) =>
+    setQuotes(prev => prev.map(q => q.id === newDoc.id ? { ...newDoc, updatedAt: Date.now() } : q));
+
   const [saveStatus, setSaveStatus] = useState('saved');
 
   useEffect(() => {
     setSaveStatus('saving');
     const timer = setTimeout(() => {
       try {
-        localStorage.setItem('current-quote', JSON.stringify(doc));
+        localStorage.setItem(QUOTES_KEY, JSON.stringify(quotes));
+        localStorage.setItem(CURRENT_ID_KEY, currentId);
       } catch {}
       setSaveStatus('saved');
     }, 600);
     return () => clearTimeout(timer);
-  }, [doc]);
+  }, [quotes, currentId]);
 
   const [lang, setLang] = useState('bs');
   const [currency, setCurrency] = useState('KM');
@@ -728,6 +822,27 @@ export default function App() {
     const newPositions = [...doc.positions];
     [newPositions[idx], newPositions[newIdx]] = [newPositions[newIdx], newPositions[idx]];
     setDoc({ ...doc, positions: newPositions });
+  };
+
+  const newQuote = () => {
+    const q = createEmptyDoc();
+    setQuotes(prev => [q, ...prev]);
+    setCurrentId(q.id);
+  };
+
+  const selectQuote = (id) => setCurrentId(id);
+
+  const deleteQuote = (id) => {
+    setQuotes(prev => {
+      const next = prev.filter(q => q.id !== id);
+      if (next.length === 0) {
+        const q = createEmptyDoc();
+        setCurrentId(q.id);
+        return [q];
+      }
+      if (id === currentId) setCurrentId(next[0].id);
+      return next;
+    });
   };
 
   return (
@@ -792,11 +907,22 @@ export default function App() {
         </div>
 
         {/* MAIN GRID */}
-        <div className={view === 'split' ? "grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-6 p-6" : "p-6"}>
+        <div className={view === 'split' ? "grid grid-cols-1 lg:grid-cols-[240px_420px_1fr]" : "p-6"}>
+
+          {/* QUOTES LIST SIDEBAR */}
+          {view === 'split' && (
+            <QuotesList
+              quotes={quotes}
+              currentId={currentId}
+              onSelect={selectQuote}
+              onNew={newQuote}
+              onDelete={deleteQuote}
+            />
+          )}
 
           {/* EDITOR PANEL */}
           {view === 'split' && (
-            <div className="space-y-4">
+            <div className="space-y-4 p-6 border-r overflow-y-auto" style={{ borderColor: '#e5e5e0' }}>
               {/* Header info */}
               <div className="bg-white border p-4" style={{ borderColor: '#e5e5e0' }}>
                 <div className="text-xs uppercase tracking-wider text-stone-500 mb-3">Podaci o ponudi</div>
