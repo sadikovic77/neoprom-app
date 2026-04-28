@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Plus, Trash2, Copy, Printer, FileText, Eye, EyeOff, ChevronDown, ChevronUp } from 'lucide-react';
 
 // ===== PRIJEVODI ZA DOKUMENT (PDF izlaz) =====
@@ -656,8 +656,13 @@ function PdfPreview({ doc, lang, currency, showPrices }) {
 }
 
 // ===== GLAVNA APLIKACIJA =====
-export default function App() {
-  const [doc, setDoc] = useState({
+const getInitialDoc = () => {
+  try {
+    const saved = localStorage.getItem('current-quote');
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return {
+    id: crypto.randomUUID(),
     number: `${new Date().getFullYear()}-0001`,
     date: new Date().toLocaleDateString('de-DE'),
     customer: { name: 'Dr. Kemal Karabeg', address: 'Nugle II 4B/12\n70230 Bugojno' },
@@ -667,7 +672,24 @@ export default function App() {
       { ...newPosition('single'), width: 800, height: 1400, quantity: 3, unitPrice: 320 },
     ],
     netOverride: 0
-  });
+  };
+};
+
+export default function App() {
+  const [doc, setDoc] = useState(getInitialDoc);
+  const [saveStatus, setSaveStatus] = useState('saved');
+
+  useEffect(() => {
+    setSaveStatus('saving');
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem('current-quote', JSON.stringify(doc));
+      } catch {}
+      setSaveStatus('saved');
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [doc]);
+
   const [lang, setLang] = useState('bs');
   const [currency, setCurrency] = useState('KM');
   const [showPrices, setShowPrices] = useState(true);
@@ -756,6 +778,9 @@ export default function App() {
             </button>
 
             <div className="ml-auto flex items-center gap-2">
+              <span style={{ fontSize: '11px', color: saveStatus === 'saved' ? '#16a34a' : '#ca8a04' }}>
+                {saveStatus === 'saved' ? '✓ Spremljeno' : '⏳ Spremam...'}
+              </span>
               <button onClick={() => setView(view === 'split' ? 'preview' : 'split')} className="text-xs px-3 py-1.5 border" style={{ borderColor: '#d4d4cf' }}>
                 {view === 'split' ? 'Samo preview' : 'Editor + preview'}
               </button>
