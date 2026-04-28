@@ -659,11 +659,21 @@ function PdfPreview({ doc, lang, currency, showPrices }) {
 const QUOTES_KEY = 'quotes';
 const CURRENT_ID_KEY = 'current-quote-id';
 
-const createEmptyDoc = () => ({
+const nextQuoteNumber = (quotes = []) => {
+  const year = new Date().getFullYear();
+  const prefix = `${year}-`;
+  const max = quotes
+    .filter(q => q.number?.startsWith(prefix))
+    .map(q => parseInt(q.number.slice(prefix.length), 10) || 0)
+    .reduce((a, b) => Math.max(a, b), 0);
+  return `${year}-${String(max + 1).padStart(4, '0')}`;
+};
+
+const createEmptyDoc = (quotes = []) => ({
   id: crypto.randomUUID(),
   createdAt: Date.now(),
   updatedAt: Date.now(),
-  number: `${new Date().getFullYear()}-001`,
+  number: nextQuoteNumber(quotes),
   date: new Date().toLocaleDateString('de-DE'),
   customer: { name: '', address: '' },
   positions: [],
@@ -693,7 +703,7 @@ const loadStorage = () => {
   return { quotes: [doc], currentId: doc.id };
 };
 
-function QuoteListItem({ quote, isActive, onSelect, onDelete }) {
+function QuoteListItem({ quote, isActive, onSelect, onDelete, onDuplicate }) {
   const [confirm, setConfirm] = useState(false);
   const total = quote.positions.reduce((s, p) => s + (p.unitPrice || 0) * (p.quantity || 1), 0);
   return (
@@ -708,7 +718,7 @@ function QuoteListItem({ quote, isActive, onSelect, onDelete }) {
           <div className="text-xs truncate text-stone-600">{quote.customer.name || '—'}</div>
           <div className="text-[10px] text-stone-400 mt-0.5"
             style={{ fontFamily: 'Geist Mono, ui-monospace, monospace' }}>
-            {fmt(total, 'KM')}
+            {quote.date} · {total > 0 ? fmt(total, 'KM') : '—'}
           </div>
         </div>
         <div className="shrink-0 pt-0.5">
@@ -718,10 +728,16 @@ function QuoteListItem({ quote, isActive, onSelect, onDelete }) {
               <button onClick={() => setConfirm(false)} className="text-[10px] text-stone-400 px-1">Ne</button>
             </div>
           ) : (
-            <button onClick={e => { e.stopPropagation(); setConfirm(true); }}
-              className="text-stone-300 hover:text-red-500 p-0.5">
-              <Trash2 size={12} />
-            </button>
+            <div className="flex gap-0.5">
+              <button onClick={e => { e.stopPropagation(); onDuplicate(); }}
+                className="text-stone-300 hover:text-stone-600 p-0.5">
+                <Copy size={12} />
+              </button>
+              <button onClick={e => { e.stopPropagation(); setConfirm(true); }}
+                className="text-stone-300 hover:text-red-500 p-0.5">
+                <Trash2 size={12} />
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -729,7 +745,7 @@ function QuoteListItem({ quote, isActive, onSelect, onDelete }) {
   );
 }
 
-function QuotesList({ quotes, currentId, onSelect, onNew, onDelete }) {
+function QuotesList({ quotes, currentId, onSelect, onNew, onDelete, onDuplicate }) {
   const [search, setSearch] = useState('');
   const sorted = [...quotes].sort((a, b) => b.updatedAt - a.updatedAt);
   const filtered = sorted.filter(q =>
@@ -756,7 +772,7 @@ function QuotesList({ quotes, currentId, onSelect, onNew, onDelete }) {
         )}
         {filtered.map(q => (
           <QuoteListItem key={q.id} quote={q} isActive={q.id === currentId}
-            onSelect={() => onSelect(q.id)} onDelete={() => onDelete(q.id)} />
+            onSelect={() => onSelect(q.id)} onDelete={() => onDelete(q.id)} onDuplicate={() => onDuplicate(q.id)} />
         ))}
       </div>
     </div>
@@ -825,9 +841,25 @@ export default function App() {
   };
 
   const newQuote = () => {
-    const q = createEmptyDoc();
+    const q = createEmptyDoc(quotes);
     setQuotes(prev => [q, ...prev]);
     setCurrentId(q.id);
+  };
+
+  const duplicateQuote = (id) => {
+    const original = quotes.find(q => q.id === id);
+    if (!original) return;
+    const now = Date.now();
+    const copy = {
+      ...original,
+      id: crypto.randomUUID(),
+      number: nextQuoteNumber(quotes),
+      date: new Date().toLocaleDateString('de-DE'),
+      createdAt: now,
+      updatedAt: now,
+    };
+    setQuotes(prev => [copy, ...prev]);
+    setCurrentId(copy.id);
   };
 
   const selectQuote = (id) => setCurrentId(id);
@@ -917,6 +949,7 @@ export default function App() {
               onSelect={selectQuote}
               onNew={newQuote}
               onDelete={deleteQuote}
+              onDuplicate={duplicateQuote}
             />
           )}
 
