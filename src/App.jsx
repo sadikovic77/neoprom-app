@@ -1,6 +1,7 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Plus, Trash2, Copy, Printer, FileText, Eye, EyeOff, ChevronDown, ChevronUp } from 'lucide-react';
 import CustomersManager from './CustomersManager';
+import { getCustomers, saveCustomer } from './utils/customers';
 
 // ===== PRIJEVODI ZA DOKUMENT (PDF izlaz) =====
 const T = {
@@ -656,6 +657,52 @@ function PdfPreview({ doc, lang, currency, showPrices }) {
   );
 }
 
+// ===== CUSTOMER AUTOCOMPLETE =====
+function CustomerAutocomplete({ value, onChange, onSelect }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  const suggestions = open && value.trim()
+    ? getCustomers()
+        .filter(c => c.name.toLowerCase().includes(value.toLowerCase()))
+        .slice(0, 5)
+    : [];
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <input
+        value={value}
+        onChange={e => { onChange(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        className="w-full px-2 py-1.5 border text-sm"
+        style={{ borderColor: '#d4d4cf' }}
+      />
+      {suggestions.length > 0 && (
+        <div className="absolute z-30 w-full bg-white border shadow-md mt-0.5"
+          style={{ borderColor: '#d4d4cf' }}>
+          {suggestions.map(c => (
+            <div key={c.id}
+              onMouseDown={e => { e.preventDefault(); onSelect(c); setOpen(false); }}
+              className="px-3 py-2 cursor-pointer hover:bg-stone-50 border-b last:border-0"
+              style={{ borderColor: '#f0f0ec' }}>
+              <div className="text-xs font-medium text-stone-800">{c.name}</div>
+              <div className="text-[10px] text-stone-400 truncate">{c.address?.split('\n')[0]}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ===== GLAVNA APLIKACIJA =====
 const QUOTES_KEY = 'quotes';
 const CURRENT_ID_KEY = 'current-quote-id';
@@ -677,6 +724,7 @@ const createEmptyDoc = (quotes = []) => ({
   number: nextQuoteNumber(quotes),
   date: new Date().toLocaleDateString('de-DE'),
   customer: { name: '', address: '' },
+  customerId: null,
   positions: [],
   netOverride: 0,
 });
@@ -808,6 +856,7 @@ export default function App() {
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [view, setView] = useState('split'); // 'split' | 'preview'
   const [currentView, setCurrentView] = useState('quotes'); // 'quotes' | 'customers'
+  const [customerSavedToast, setCustomerSavedToast] = useState(false);
 
   const updatePos = (id, newPos) => {
     setDoc({ ...doc, positions: doc.positions.map(p => p.id === id ? newPos : p) });
@@ -988,12 +1037,48 @@ export default function App() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] uppercase tracking-wider text-stone-500 mb-1">Kupac</label>
-                    <input value={doc.customer.name} onChange={e => setDoc({ ...doc, customer: { ...doc.customer, name: e.target.value } })} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-[10px] uppercase tracking-wider text-stone-500">Kupac</label>
+                      {doc.customerId && (
+                        <button onClick={() => setCurrentView('customers')}
+                          className="text-[10px] px-1.5 py-0.5 flex items-center gap-1"
+                          style={{ color: '#1f3a5f', background: '#eff6ff' }}>
+                          ✓ Iz baze
+                        </button>
+                      )}
+                    </div>
+                    <CustomerAutocomplete
+                      value={doc.customer.name}
+                      onChange={name => setDoc({ ...doc, customer: { ...doc.customer, name }, customerId: null })}
+                      onSelect={c => {
+                        setDoc({ ...doc, customer: { name: c.name, address: c.address }, customerId: c.id });
+                        if (c.language) setLang(c.language);
+                        if (c.currency) setCurrency(c.currency);
+                      }}
+                    />
                   </div>
                   <div>
                     <label className="block text-[10px] uppercase tracking-wider text-stone-500 mb-1">Adresa</label>
                     <textarea value={doc.customer.address} onChange={e => setDoc({ ...doc, customer: { ...doc.customer, address: e.target.value } })} rows="2" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
+                    {doc.customer.name && !doc.customerId && (
+                      <div className="mt-1.5 flex items-center gap-2">
+                        <button onClick={() => {
+                          const saved = saveCustomer({
+                            name: doc.customer.name, address: doc.customer.address,
+                            phone: '', email: '', language: lang, currency: currency,
+                            vatPayer: false, notes: '',
+                          });
+                          setDoc({ ...doc, customerId: saved.id });
+                          setCustomerSavedToast(true);
+                          setTimeout(() => setCustomerSavedToast(false), 2500);
+                        }} className="text-[10px] text-stone-500 hover:text-stone-800">
+                          + Sačuvaj kao novog kupca
+                        </button>
+                        {customerSavedToast && (
+                          <span className="text-[10px]" style={{ color: '#16a34a' }}>Kupac sačuvan u bazu ✓</span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
