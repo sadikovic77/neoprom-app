@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Plus, Trash2, Copy, Printer, FileText, Eye, EyeOff, ChevronDown, ChevronUp } from 'lucide-react';
+import CustomersManager from './CustomersManager';
 
 // ===== PRIJEVODI ZA DOKUMENT (PDF izlaz) =====
 const T = {
@@ -806,6 +807,7 @@ export default function App() {
   const [expandedId, setExpandedId] = useState(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [view, setView] = useState('split'); // 'split' | 'preview'
+  const [currentView, setCurrentView] = useState('quotes'); // 'quotes' | 'customers'
 
   const updatePos = (id, newPos) => {
     setDoc({ ...doc, positions: doc.positions.map(p => p.id === id ? newPos : p) });
@@ -900,6 +902,18 @@ export default function App() {
               <img src="/neoprom-icon.svg" alt="Neoprom" style={{ height: '28px', display: 'block' }} />
               <div className="font-medium tracking-tight">Generator ponuda <span className="text-stone-400 text-xs ml-1">v0.1</span></div>
             </div>
+            <div className="flex items-center gap-1 ml-2">
+              {[['quotes', 'Ponude'], ['customers', 'Kupci']].map(([v, label]) => (
+                <button key={v} onClick={() => setCurrentView(v)}
+                  className="px-3 py-1 text-xs font-medium"
+                  style={{
+                    color: currentView === v ? '#1f3a5f' : '#6b6b6b',
+                    borderBottom: `2px solid ${currentView === v ? '#1f3a5f' : 'transparent'}`
+                  }}>
+                  {label}
+                </button>
+              ))}
+            </div>
             <div className="h-5 w-px bg-stone-300 mx-1"></div>
 
             {/* Jezik */}
@@ -938,8 +952,11 @@ export default function App() {
           </div>
         </div>
 
+        {/* CUSTOMERS VIEW */}
+        {currentView === 'customers' && <CustomersManager />}
+
         {/* MAIN GRID */}
-        <div className={view === 'split' ? "grid grid-cols-1 lg:grid-cols-[240px_420px_1fr]" : "p-6"}>
+        {currentView === 'quotes' && <div className={view === 'split' ? "grid grid-cols-1 lg:grid-cols-[240px_420px_1fr]" : "p-6"}>
 
           {/* QUOTES LIST SIDEBAR */}
           {view === 'split' && (
@@ -1032,7 +1049,7 @@ export default function App() {
               <PdfPreview doc={doc} lang={lang} currency={currency} showPrices={showPrices} />
             </div>
           </div>
-        </div>
+        </div>}
 
         <div className="text-center text-[10px] text-stone-400 py-4 border-t" style={{ borderColor: '#e5e5e0' }}>
           Demo · Neoprom Engineering · Generator ponuda v0.1
