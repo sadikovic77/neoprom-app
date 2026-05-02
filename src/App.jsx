@@ -128,7 +128,11 @@ const newPosition = (type = 'single') => {
     sashDepth: 78,
     accessories: ["Zaštita od insekata: (sistem Harmo)"],
     systemName: "Deceuninck Elegant 76 MD ili ekvivalentan model",
-    customDescription: ""
+    customDescription: "",
+    hasShutter: false,
+    shutterBoxHeight: 200,
+    shutterBoxType: 'outside',
+    shutterControl: 'belt',
   };
   switch (type) {
     case 'single': return { ...base, opening: 'rightTT' };
@@ -149,12 +153,15 @@ function WindowDrawing({ pos, size = 360 }) {
   const drawW = size - PAD_LEFT - PAD_RIGHT;
   const drawH = size - PAD_TOP - PAD_BOTTOM;
 
-  // Skalira na ono što više stane
-  const scale = Math.min(drawW / pos.width, drawH / pos.height);
+  // Skalira na ono što više stane (uzima u obzir roletnu ako postoji)
+  const shutterBoxH = pos.hasShutter ? (pos.shutterBoxHeight || 200) : 0;
+  const scale = Math.min(drawW / pos.width, drawH / (pos.height + shutterBoxH));
   const w = pos.width * scale;
   const h = pos.height * scale;
+  const shutterH = shutterBoxH * scale;
   const x0 = PAD_LEFT + (drawW - w) / 2;
-  const y0 = PAD_TOP + (drawH - h) / 2;
+  const y0 = PAD_TOP + (drawH - (h + shutterH)) / 2; // vrh roletne (ili prozora)
+  const winY0 = y0 + shutterH;                        // vrh prozorskog rama
 
   // Debljina rama u skali (70mm stvarno)
   const FRAME_MM = 70;
@@ -232,19 +239,35 @@ function WindowDrawing({ pos, size = 360 }) {
 
   // === Sastavljanje na osnovu tipa ===
   const elements = [];
+
+  // roletna kutija (iznad prozora)
+  if (pos.hasShutter) {
+    elements.push(
+      <g key="shutter-box">
+        <rect x={x0} y={y0} width={w} height={shutterH}
+          fill={pos.shutterBoxType === 'inside' ? '#f0f0f0' : 'white'}
+          stroke="#1a1a1a" strokeWidth="1.2" />
+        <line x1={x0} y1={y0 + shutterH / 2} x2={x0 + w} y2={y0 + shutterH / 2}
+          stroke="#1a1a1a" strokeWidth="0.4" strokeDasharray="3,2" />
+        <text x={x0 + w / 2} y={y0 + shutterH / 2 + 2.5}
+          textAnchor="middle" fontSize="7" fill="#1a1a1a">ROLETNA</text>
+      </g>
+    );
+  }
+
   // vanjski ram
   elements.push(
-    <rect key="frame" x={x0} y={y0} width={w} height={h} fill="white" stroke="#1a1a1a" strokeWidth="1.2" />
+    <rect key="frame" x={x0} y={winY0} width={w} height={h} fill="white" stroke="#1a1a1a" strokeWidth="1.2" />
   );
   // unutarnji rub rama
   elements.push(
-    <rect key="frame-in" x={x0 + f} y={y0 + f} width={w - 2 * f} height={h - 2 * f} fill="none" stroke="#1a1a1a" strokeWidth="0.5" opacity="0.4" />
+    <rect key="frame-in" x={x0 + f} y={winY0 + f} width={w - 2 * f} height={h - 2 * f} fill="none" stroke="#1a1a1a" strokeWidth="0.5" opacity="0.4" />
   );
 
   const innerW = w - 2 * f;
   const innerH = h - 2 * f;
   const innerX = x0 + f;
-  const innerY = y0 + f;
+  const innerY = winY0 + f;
 
   if (pos.type === 'single' || pos.type === 'door' || pos.type === 'fixed') {
     elements.push(drawSash(innerX, innerY, innerW, innerH, pos.opening, 'panel'));
@@ -293,30 +316,30 @@ function WindowDrawing({ pos, size = 360 }) {
 
       {/* horizontalna kota (širina) */}
       <g stroke="#1a1a1a" strokeWidth="0.4">
-        <line x1={x0} y1={y0 + h + dimOffsetY - 6} x2={x0} y2={y0 + h + dimOffsetY + 6} />
-        <line x1={x0 + w} y1={y0 + h + dimOffsetY - 6} x2={x0 + w} y2={y0 + h + dimOffsetY + 6} />
-        <line x1={x0} y1={y0 + h + dimOffsetY} x2={x0 + w} y2={y0 + h + dimOffsetY} />
-        <polygon points={`${x0},${y0 + h + dimOffsetY} ${x0 + 5},${y0 + h + dimOffsetY - 2} ${x0 + 5},${y0 + h + dimOffsetY + 2}`} fill="#1a1a1a" />
-        <polygon points={`${x0 + w},${y0 + h + dimOffsetY} ${x0 + w - 5},${y0 + h + dimOffsetY - 2} ${x0 + w - 5},${y0 + h + dimOffsetY + 2}`} fill="#1a1a1a" />
+        <line x1={x0} y1={winY0 + h + dimOffsetY - 6} x2={x0} y2={winY0 + h + dimOffsetY + 6} />
+        <line x1={x0 + w} y1={winY0 + h + dimOffsetY - 6} x2={x0 + w} y2={winY0 + h + dimOffsetY + 6} />
+        <line x1={x0} y1={winY0 + h + dimOffsetY} x2={x0 + w} y2={winY0 + h + dimOffsetY} />
+        <polygon points={`${x0},${winY0 + h + dimOffsetY} ${x0 + 5},${winY0 + h + dimOffsetY - 2} ${x0 + 5},${winY0 + h + dimOffsetY + 2}`} fill="#1a1a1a" />
+        <polygon points={`${x0 + w},${winY0 + h + dimOffsetY} ${x0 + w - 5},${winY0 + h + dimOffsetY - 2} ${x0 + w - 5},${winY0 + h + dimOffsetY + 2}`} fill="#1a1a1a" />
       </g>
-      <text x={x0 + w / 2} y={y0 + h + dimOffsetY + 14} textAnchor="middle" fill="#1a1a1a">{pos.width}</text>
+      <text x={x0 + w / 2} y={winY0 + h + dimOffsetY + 14} textAnchor="middle" fill="#1a1a1a">{pos.width}</text>
 
-      {/* vertikalna kota (visina) */}
+      {/* vertikalna kota (ukupna visina: roletna + prozor) */}
       <g stroke="#1a1a1a" strokeWidth="0.4">
         <line x1={x0 - dimOffsetX - 6} y1={y0} x2={x0 - dimOffsetX + 6} y2={y0} />
-        <line x1={x0 - dimOffsetX - 6} y1={y0 + h} x2={x0 - dimOffsetX + 6} y2={y0 + h} />
-        <line x1={x0 - dimOffsetX} y1={y0} x2={x0 - dimOffsetX} y2={y0 + h} />
+        <line x1={x0 - dimOffsetX - 6} y1={winY0 + h} x2={x0 - dimOffsetX + 6} y2={winY0 + h} />
+        <line x1={x0 - dimOffsetX} y1={y0} x2={x0 - dimOffsetX} y2={winY0 + h} />
         <polygon points={`${x0 - dimOffsetX},${y0} ${x0 - dimOffsetX - 2},${y0 + 5} ${x0 - dimOffsetX + 2},${y0 + 5}`} fill="#1a1a1a" />
-        <polygon points={`${x0 - dimOffsetX},${y0 + h} ${x0 - dimOffsetX - 2},${y0 + h - 5} ${x0 - dimOffsetX + 2},${y0 + h - 5}`} fill="#1a1a1a" />
+        <polygon points={`${x0 - dimOffsetX},${winY0 + h} ${x0 - dimOffsetX - 2},${winY0 + h - 5} ${x0 - dimOffsetX + 2},${winY0 + h - 5}`} fill="#1a1a1a" />
       </g>
-      <text x={x0 - dimOffsetX - 8} y={y0 + h / 2} textAnchor="middle" fill="#1a1a1a" transform={`rotate(-90, ${x0 - dimOffsetX - 8}, ${y0 + h / 2})`}>{pos.height}</text>
+      <text x={x0 - dimOffsetX - 8} y={y0 + (shutterH + h) / 2} textAnchor="middle" fill="#1a1a1a" transform={`rotate(-90, ${x0 - dimOffsetX - 8}, ${y0 + (shutterH + h) / 2})`}>{pos.height + shutterBoxH}</text>
 
       {/* sub-kote za podjelu (dvokrilni / klizna / windowDoor) */}
       {(pos.type === 'double' || pos.type === 'sliding' || pos.type === 'windowDoor') && (() => {
         const ratio = pos.divisionRatio || 0.5;
         const w1mm = Math.round(pos.width * ratio);
         const w2mm = pos.width - w1mm;
-        const subY = y0 + h + dimOffsetY - 16;
+        const subY = winY0 + h + dimOffsetY - 16;
         return (
           <g stroke="#1a1a1a" strokeWidth="0.3" fill="#1a1a1a">
             <line x1={x0} y1={subY - 6} x2={x0} y2={subY + 2} />
@@ -335,13 +358,22 @@ function WindowDrawing({ pos, size = 360 }) {
         const tHscaled = tH * scale;
         return (
           <g stroke="#1a1a1a" strokeWidth="0.3" fill="#1a1a1a">
-            <line x1={subX - 4} y1={y0 + f} x2={subX + 2} y2={y0 + f} />
-            <line x1={subX - 4} y1={y0 + f + tHscaled} x2={subX + 2} y2={y0 + f + tHscaled} />
-            <text x={subX - 2} y={y0 + f + tHscaled / 2 + 3} textAnchor="end" fontSize="8">{tH}</text>
-            <text x={subX - 2} y={y0 + f + tHscaled + (h - 2 * f - tHscaled) / 2 + 3} textAnchor="end" fontSize="8">{Math.round((pos.height - 2 * 70 - tH))}</text>
+            <line x1={subX - 4} y1={winY0 + f} x2={subX + 2} y2={winY0 + f} />
+            <line x1={subX - 4} y1={winY0 + f + tHscaled} x2={subX + 2} y2={winY0 + f + tHscaled} />
+            <text x={subX - 2} y={winY0 + f + tHscaled / 2 + 3} textAnchor="end" fontSize="8">{tH}</text>
+            <text x={subX - 2} y={winY0 + f + tHscaled + (h - 2 * f - tHscaled) / 2 + 3} textAnchor="end" fontSize="8">{Math.round((pos.height - 2 * 70 - tH))}</text>
           </g>
         );
       })()}
+
+      {/* sub-kota za roletnu */}
+      {pos.hasShutter && shutterH > 0 && (
+        <g stroke="#1a1a1a" strokeWidth="0.3" fill="#1a1a1a">
+          <line x1={x0 - dimOffsetX + 8} y1={y0}    x2={x0 - dimOffsetX + 14} y2={y0} />
+          <line x1={x0 - dimOffsetX + 8} y1={winY0} x2={x0 - dimOffsetX + 14} y2={winY0} />
+          <text x={x0 - dimOffsetX + 6} y={y0 + shutterH / 2 + 3} textAnchor="end" fontSize="8">{shutterBoxH}</text>
+        </g>
+      )}
     </svg>
   );
 }
@@ -407,6 +439,11 @@ function PositionEditor({ pos, onChange, onDelete, onDuplicate, onMoveUp, onMove
             <div>
               <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Visina (mm)</label>
               <input type="number" value={pos.height} onChange={e => update('height', +e.target.value)} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+              {pos.hasShutter && (
+                <div className="text-[10px] text-stone-400 mt-1">
+                  Ukupna vanjska visina: {pos.height + (pos.shutterBoxHeight || 200)} mm
+                </div>
+              )}
             </div>
           </div>
 
@@ -476,6 +513,44 @@ function PositionEditor({ pos, onChange, onDelete, onDuplicate, onMoveUp, onMove
                 <input type="number" value={pos.sashDepth} onChange={e => update('sashDepth', +e.target.value)} placeholder="Dubina krila" className="px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
               </div>
               <textarea value={pos.accessories.join('\n')} onChange={e => update('accessories', e.target.value.split('\n').filter(Boolean))} placeholder="Dodatni profili / pribor (jedna stavka po liniji)" rows="3" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
+            </div>
+          </details>
+
+          {/* Roletna */}
+          <details className="text-xs">
+            <summary className="cursor-pointer text-stone-500 uppercase tracking-wider">Roletna</summary>
+            <div className="space-y-2 mt-2">
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={pos.hasShutter || false}
+                  onChange={e => update('hasShutter', e.target.checked)} />
+                Postavi roletnu
+              </label>
+              {pos.hasShutter && (<>
+                <div>
+                  <label className="block text-stone-400 mb-1">Visina kutije (mm)</label>
+                  <input type="number" value={pos.shutterBoxHeight || 200}
+                    onChange={e => update('shutterBoxHeight', +e.target.value)}
+                    min="100" max="300" step="5"
+                    className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
+                </div>
+                <div className="flex gap-4">
+                  {[['outside', 'Vanjska kutija'], ['inside', 'Unutarnja kutija']].map(([v, label]) => (
+                    <label key={v} className="flex items-center gap-1.5 cursor-pointer">
+                      <input type="radio" name={`sht-${pos.id}`} value={v}
+                        checked={(pos.shutterBoxType || 'outside') === v}
+                        onChange={() => update('shutterBoxType', v)} />
+                      {label}
+                    </label>
+                  ))}
+                </div>
+                <select value={pos.shutterControl || 'belt'}
+                  onChange={e => update('shutterControl', e.target.value)}
+                  className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }}>
+                  <option value="belt">Upravljanje: Traka (gurtna)</option>
+                  <option value="crank">Upravljanje: Ručica</option>
+                  <option value="motor">Upravljanje: Motor</option>
+                </select>
+              </>)}
             </div>
           </details>
 
@@ -591,14 +666,23 @@ function PdfPreview({ doc, lang, currency, showPrices }) {
               <div><span className="font-semibold">{t.glass}:</span> {p.glass}</div>
               <div><span className="font-semibold">{t.frameProf}:</span> {p.frameProfile}, {t.frameDepth} {p.frameDepth} mm</div>
               <div><span className="font-semibold">{t.sashProf}:</span> {p.sashProfile}, {t.sashDepth} {p.sashDepth} mm</div>
-              {p.accessories.length > 0 && (
-                <div className="mt-1.5">
-                  <div className="font-semibold">{t.accessories}:</div>
-                  <ul className="ml-3">
-                    {p.accessories.map((a, idx) => <li key={idx}>· {a}</li>)}
-                  </ul>
-                </div>
-              )}
+              {(() => {
+                const autoLines = [];
+                if (p.hasShutter && !p.accessories.some(a => a.toLowerCase().includes('roletna'))) {
+                  const type = p.shutterBoxType === 'inside' ? 'unutarnja' : 'vanjska';
+                  const ctrl = { belt: 'traka (gurtna)', crank: 'ručica', motor: 'motor' }[p.shutterControl || 'belt'];
+                  const bh = p.shutterBoxHeight || 200;
+                  autoLines.push(`Roletna: ${type} ALU termoizolaciona, ${bh}×${bh}`);
+                  autoLines.push(`Upravljanje: ${ctrl}`);
+                }
+                const all = [...p.accessories, ...autoLines];
+                return all.length > 0 ? (
+                  <div className="mt-1.5">
+                    <div className="font-semibold">{t.accessories}:</div>
+                    <ul className="ml-3">{all.map((a, idx) => <li key={idx}>· {a}</li>)}</ul>
+                  </div>
+                ) : null;
+              })()}
             </div>
             <div className="w-12 shrink-0 text-center pt-1" style={{ fontFamily: 'Geist Mono, ui-monospace, monospace' }}>
               {p.quantity}
