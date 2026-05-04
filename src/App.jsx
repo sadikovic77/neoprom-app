@@ -112,6 +112,7 @@ const ELEMENT_TYPES = [
   { id: 'doubleDoor', name: 'Dvokrilna balkonska vrata', nameDe: 'Zweiflügelige Balkontür' },
   { id: 'entryDoor', name: 'Ulazna vrata', nameDe: 'Eingangstür' },
   { id: 'sliding3', name: 'Klizna stijena 3-djelna', nameDe: 'Schiebewand 3-teilig' },
+  { id: 'panelCombo', name: 'Kombinovani panel', nameDe: 'Kombi-Element mit Paneel' },
 ];
 
 // Default vrijednosti za novu poziciju (najčešći case za 80% ponuda)
@@ -150,6 +151,7 @@ const newPosition = (type = 'single') => {
     case 'doubleDoor': return { ...base, width: 1800, height: 2100, opening: 'bothTT', divisionRatio: 0.5 };
     case 'entryDoor': return { ...base, width: 1000, height: 2100, opening: 'rightDoor', doorPanel: 'fullPanel', hasGlassPanel: false, glassPanelHeight: 600 };
     case 'sliding3': return { ...base, width: 4500, height: 2400, opening: 'centerSlide', divisions: [0.33, 0.34, 0.33], sashDepth: 104 };
+    case 'panelCombo': return { ...base, width: 1500, height: 2000, opening: 'rightTT', panelHeight: 900 };
     default: return base;
   }
 };
@@ -328,6 +330,20 @@ function WindowDrawing({ pos, size = 360 }) {
     elements.push(drawSash(innerX,           innerY, wx1, innerH, p1Op, 'tp1'));
     elements.push(drawSash(innerX + wx1,     innerY, wx2, innerH, p2Op, 'tp2'));
     elements.push(drawSash(innerX + wx1 + wx2, innerY, wx3, innerH, p3Op, 'tp3'));
+  } else if (pos.type === 'panelCombo') {
+    const pH = (pos.panelHeight || 900) * scale;          // visina panela u px
+    const glassH = innerH - pH;                           // visina stakla u px
+    const glassY = innerY;                                 // staklo gore
+    const panelY = innerY + glassH;                        // panel dolje
+    // ostakljeno krilo (gornji dio)
+    elements.push(drawSash(innerX, glassY, innerW, glassH, pos.opening, 'pc-glass'));
+    // PVC panel (donji dio)
+    elements.push(
+      <g key="pc-panel">
+        <rect x={innerX} y={panelY} width={innerW} height={pH} fill="#e8e4dc" stroke="#1a1a1a" strokeWidth="0.7" />
+        <line x1={innerX} y1={panelY} x2={innerX + innerW} y2={panelY} stroke="#1a1a1a" strokeWidth="0.9" />
+      </g>
+    );
   } else if (pos.type === 'sliding3') {
     const divs = pos.divisions || [0.33, 0.34, 0.33];
     const wx1 = innerW * divs[0];
@@ -464,6 +480,26 @@ function WindowDrawing({ pos, size = 360 }) {
             <line x1={subX - 4} y1={winY0 + f + tHscaled} x2={subX + 2} y2={winY0 + f + tHscaled} />
             <text x={subX - 2} y={winY0 + f + tHscaled / 2 + 3} textAnchor="end" fontSize="8">{tH}</text>
             <text x={subX - 2} y={winY0 + f + tHscaled + (h - 2 * f - tHscaled) / 2 + 3} textAnchor="end" fontSize="8">{Math.round((pos.height - 2 * 70 - tH))}</text>
+          </g>
+        );
+      })()}
+
+      {/* sub-kota za panelCombo */}
+      {pos.type === 'panelCombo' && (() => {
+        const pHmm = pos.panelHeight || 900;
+        const pHscaled = pHmm * scale;
+        const glassHmm = pos.height - 140 - pHmm;
+        const subX = x0 - dimOffsetX + 14;
+        const topY = winY0 + f;
+        const midY = winY0 + f + innerH - pHscaled;
+        const botY = winY0 + f + innerH;
+        return (
+          <g stroke="#1a1a1a" strokeWidth="0.3" fill="#1a1a1a">
+            <line x1={subX - 4} y1={topY} x2={subX + 2} y2={topY} />
+            <line x1={subX - 4} y1={midY} x2={subX + 2} y2={midY} />
+            <line x1={subX - 4} y1={botY} x2={subX + 2} y2={botY} />
+            <text x={subX - 2} y={topY + (midY - topY) / 2 + 3} textAnchor="end" fontSize="8">{glassHmm}</text>
+            <text x={subX - 2} y={midY + pHscaled / 2 + 3} textAnchor="end" fontSize="8">{pHmm}</text>
           </g>
         );
       })()}
@@ -642,6 +678,16 @@ function PositionEditor({ pos, onChange, onDelete, onDuplicate, onMoveUp, onMove
             <div>
               <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Visina nadsvjetla (mm)</label>
               <input type="number" value={pos.transomHeight || 400} onChange={e => update('transomHeight', +e.target.value)} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+            </div>
+          )}
+
+          {/* Visina panela za panelCombo */}
+          {pos.type === 'panelCombo' && (
+            <div>
+              <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Visina panela (mm)</label>
+              <input type="number" value={pos.panelHeight || 900} onChange={e => update('panelHeight', +e.target.value)}
+                min="300" max="1500"
+                className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
             </div>
           )}
 
