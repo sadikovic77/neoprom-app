@@ -113,6 +113,7 @@ const ELEMENT_TYPES = [
   { id: 'entryDoor', name: 'Ulazna vrata', nameDe: 'Eingangstür' },
   { id: 'sliding3', name: 'Klizna stijena 3-djelna', nameDe: 'Schiebewand 3-teilig' },
   { id: 'panelCombo', name: 'Kombinovani panel', nameDe: 'Kombi-Element mit Paneel' },
+  { id: 'sideLight', name: 'Prozor sa bočnim svjetlom', nameDe: 'Fenster mit Seitenteil' },
 ];
 
 // Default vrijednosti za novu poziciju (najčešći case za 80% ponuda)
@@ -152,6 +153,7 @@ const newPosition = (type = 'single') => {
     case 'entryDoor': return { ...base, width: 1000, height: 2100, opening: 'rightDoor', doorPanel: 'fullPanel', hasGlassPanel: false, glassPanelHeight: 600 };
     case 'sliding3': return { ...base, width: 4500, height: 2400, opening: 'centerSlide', divisions: [0.33, 0.34, 0.33], sashDepth: 104 };
     case 'panelCombo': return { ...base, width: 1500, height: 2000, opening: 'rightTT', panelHeight: 900 };
+    case 'sideLight': return { ...base, width: 1800, height: 2100, opening: 'rightTT', sideLightPosition: 'right', sideLightWidth: 500 };
     default: return base;
   }
 };
@@ -330,6 +332,14 @@ function WindowDrawing({ pos, size = 360 }) {
     elements.push(drawSash(innerX,           innerY, wx1, innerH, p1Op, 'tp1'));
     elements.push(drawSash(innerX + wx1,     innerY, wx2, innerH, p2Op, 'tp2'));
     elements.push(drawSash(innerX + wx1 + wx2, innerY, wx3, innerH, p3Op, 'tp3'));
+  } else if (pos.type === 'sideLight') {
+    const slW = Math.min((pos.sideLightWidth || 500) * scale, innerW - 10 * scale);
+    const mainW = innerW - slW;
+    const isRight = (pos.sideLightPosition || 'right') === 'right';
+    const mainX = isRight ? innerX : innerX + slW;
+    const slX   = isRight ? innerX + mainW : innerX;
+    elements.push(drawSash(mainX, innerY, mainW, innerH, pos.opening, 'sl-main'));
+    elements.push(drawSash(slX,   innerY, slW,   innerH, 'fixed',     'sl-side'));
   } else if (pos.type === 'panelCombo') {
     const pH = (pos.panelHeight || 900) * scale;          // visina panela u px
     const glassH = innerH - pH;                           // visina stakla u px
@@ -500,6 +510,26 @@ function WindowDrawing({ pos, size = 360 }) {
             <line x1={subX - 4} y1={botY} x2={subX + 2} y2={botY} />
             <text x={subX - 2} y={topY + (midY - topY) / 2 + 3} textAnchor="end" fontSize="8">{glassHmm}</text>
             <text x={subX - 2} y={midY + pHscaled / 2 + 3} textAnchor="end" fontSize="8">{pHmm}</text>
+          </g>
+        );
+      })()}
+
+      {/* sub-kote za sideLight */}
+      {pos.type === 'sideLight' && (() => {
+        const slWmm  = pos.sideLightWidth || 500;
+        const mainWmm = pos.width - slWmm;
+        const isRight = (pos.sideLightPosition || 'right') === 'right';
+        const subY = winY0 + h + dimOffsetY - 16;
+        const divPx = isRight ? x0 + mainWmm * scale : x0 + slWmm * scale;
+        const leftWmm  = isRight ? mainWmm : slWmm;
+        const rightWmm = isRight ? slWmm   : mainWmm;
+        return (
+          <g stroke="#1a1a1a" strokeWidth="0.3" fill="#1a1a1a">
+            <line x1={x0}     y1={subY - 6} x2={x0}     y2={subY + 2} />
+            <line x1={divPx}  y1={subY - 6} x2={divPx}  y2={subY + 2} />
+            <line x1={x0 + w} y1={subY - 6} x2={x0 + w} y2={subY + 2} />
+            <text x={(x0 + divPx) / 2}        y={subY} textAnchor="middle" fontSize="8">{leftWmm}</text>
+            <text x={(divPx + x0 + w) / 2}    y={subY} textAnchor="middle" fontSize="8">{rightWmm}</text>
           </g>
         );
       })()}
@@ -678,6 +708,32 @@ function PositionEditor({ pos, onChange, onDelete, onDuplicate, onMoveUp, onMove
             <div>
               <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Visina nadsvjetla (mm)</label>
               <input type="number" value={pos.transomHeight || 400} onChange={e => update('transomHeight', +e.target.value)} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+            </div>
+          )}
+
+          {/* Bočno svjetlo za sideLight */}
+          {pos.type === 'sideLight' && (
+            <div className="space-y-2">
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-stone-500 mb-2">Bočno svjetlo</label>
+                <div className="flex gap-4">
+                  {[['right', 'Desno'], ['left', 'Lijevo']].map(([v, label]) => (
+                    <label key={v} className="flex items-center gap-1.5 text-xs cursor-pointer">
+                      <input type="radio" name={`sl-${pos.id}`} value={v}
+                        checked={(pos.sideLightPosition || 'right') === v}
+                        onChange={() => update('sideLightPosition', v)} />
+                      {label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Širina bočnog svjetla (mm)</label>
+                <input type="number" value={pos.sideLightWidth || 500}
+                  onChange={e => update('sideLightWidth', +e.target.value)}
+                  min="300" max="1000"
+                  className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+              </div>
             </div>
           )}
 
