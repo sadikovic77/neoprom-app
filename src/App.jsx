@@ -111,6 +111,7 @@ const ELEMENT_TYPES = [
   { id: 'triple', name: 'Trokrilni prozor', nameDe: 'Dreiflügeliges Fenster' },
   { id: 'doubleDoor', name: 'Dvokrilna balkonska vrata', nameDe: 'Zweiflügelige Balkontür' },
   { id: 'entryDoor', name: 'Ulazna vrata', nameDe: 'Eingangstür' },
+  { id: 'sliding3', name: 'Klizna stijena 3-djelna', nameDe: 'Schiebewand 3-teilig' },
 ];
 
 // Default vrijednosti za novu poziciju (najčešći case za 80% ponuda)
@@ -148,6 +149,7 @@ const newPosition = (type = 'single') => {
     case 'triple': return { ...base, width: 2100, height: 1400, opening: 'rightTT', divisions: [0.33, 0.33, 0.34] };
     case 'doubleDoor': return { ...base, width: 1800, height: 2100, opening: 'bothTT', divisionRatio: 0.5 };
     case 'entryDoor': return { ...base, width: 1000, height: 2100, opening: 'rightDoor', doorPanel: 'fullPanel', hasGlassPanel: false, glassPanelHeight: 600 };
+    case 'sliding3': return { ...base, width: 4500, height: 2400, opening: 'centerSlide', divisions: [0.33, 0.34, 0.33], sashDepth: 104 };
     default: return base;
   }
 };
@@ -326,6 +328,27 @@ function WindowDrawing({ pos, size = 360 }) {
     elements.push(drawSash(innerX,           innerY, wx1, innerH, p1Op, 'tp1'));
     elements.push(drawSash(innerX + wx1,     innerY, wx2, innerH, p2Op, 'tp2'));
     elements.push(drawSash(innerX + wx1 + wx2, innerY, wx3, innerH, p3Op, 'tp3'));
+  } else if (pos.type === 'sliding3') {
+    const divs = pos.divisions || [0.33, 0.34, 0.33];
+    const wx1 = innerW * divs[0];
+    const wx2 = innerW * divs[1];
+    const wx3 = innerW * divs[2];
+    const op = pos.opening || 'centerSlide';
+    elements.push(drawSash(innerX,             innerY, wx1, innerH, op === 'leftSlide'   ? 'leftSlide'  : 'fixed', 's3p1', op === 'leftSlide'));
+    elements.push(drawSash(innerX + wx1,       innerY, wx2, innerH, 'fixed',                                        's3p2', false));
+    elements.push(drawSash(innerX + wx1 + wx2, innerY, wx3, innerH, op === 'rightSlide'  ? 'rightSlide' : 'fixed', 's3p3', op === 'rightSlide'));
+    // bidirekcijska strelica za klizni panel
+    const slideCx = op === 'leftSlide'  ? innerX + wx1 / 2
+                  : op === 'rightSlide' ? innerX + wx1 + wx2 + wx3 / 2
+                  : innerX + wx1 + wx2 / 2;
+    const slideCy = innerY + innerH / 2;
+    elements.push(
+      <g key="s3-arr" stroke="#1a1a1a" strokeWidth="1" fill="none">
+        <line x1={slideCx - 15} y1={slideCy} x2={slideCx + 15} y2={slideCy} />
+        <polyline points={`${slideCx - 10},${slideCy - 4} ${slideCx - 15},${slideCy} ${slideCx - 10},${slideCy + 4}`} />
+        <polyline points={`${slideCx + 10},${slideCy - 4} ${slideCx + 15},${slideCy} ${slideCx + 10},${slideCy + 4}`} />
+      </g>
+    );
   } else if (pos.type === 'entryDoor') {
     const sashF = 50 * scale;
     const doorPanel = pos.doorPanel || 'fullPanel';
@@ -391,8 +414,8 @@ function WindowDrawing({ pos, size = 360 }) {
       </g>
       <text x={x0 - dimOffsetX - 8} y={y0 + (shutterH + h) / 2} textAnchor="middle" fill="#1a1a1a" transform={`rotate(-90, ${x0 - dimOffsetX - 8}, ${y0 + (shutterH + h) / 2})`}>{pos.height + shutterBoxH}</text>
 
-      {/* sub-kote za triple */}
-      {pos.type === 'triple' && (() => {
+      {/* sub-kote za triple i sliding3 */}
+      {(pos.type === 'triple' || pos.type === 'sliding3') && (() => {
         const divs = pos.divisions || [0.33, 0.33, 0.34];
         const w1mm = Math.round(pos.width * divs[0]);
         const w2mm = Math.round(pos.width * divs[1]);
@@ -535,6 +558,12 @@ function PositionEditor({ pos, onChange, onDelete, onDuplicate, onMoveUp, onMove
                   <option value="rightDoor">Otvaranje desno (šarke lijevo)</option>
                   <option value="leftDoor">Otvaranje lijevo (šarke desno)</option>
                 </>
+              ) : pos.type === 'sliding3' ? (
+                <>
+                  <option value="centerSlide">Klizi sredina</option>
+                  <option value="leftSlide">Klizi lijevo</option>
+                  <option value="rightSlide">Klizi desno</option>
+                </>
               ) : pos.type === 'sliding' ? (
                 <>
                   <option value="leftSlide">Klizno lijevo</option>
@@ -568,8 +597,8 @@ function PositionEditor({ pos, onChange, onDelete, onDuplicate, onMoveUp, onMove
             </div>
           )}
 
-          {/* Podjela za trokrilni */}
-          {pos.type === 'triple' && (() => {
+          {/* Podjela za trokrilni i sliding3 */}
+          {(pos.type === 'triple' || pos.type === 'sliding3') && (() => {
             const divs = pos.divisions || [0.33, 0.33, 0.34];
             const w1 = Math.round(pos.width * divs[0]);
             const w2 = Math.round(pos.width * divs[1]);
