@@ -109,6 +109,7 @@ const ELEMENT_TYPES = [
   { id: 'fixed', name: 'Fiksni element', nameDe: 'Festelement' },
   { id: 'transom', name: 'Prozor sa nadsvjetlom', nameDe: 'Fenster mit Oberlicht' },
   { id: 'triple', name: 'Trokrilni prozor', nameDe: 'Dreiflügeliges Fenster' },
+  { id: 'doubleDoor', name: 'Dvokrilna balkonska vrata', nameDe: 'Zweiflügelige Balkontür' },
 ];
 
 // Default vrijednosti za novu poziciju (najčešći case za 80% ponuda)
@@ -144,6 +145,7 @@ const newPosition = (type = 'single') => {
     case 'fixed': return { ...base, opening: 'fixed' };
     case 'transom': return { ...base, height: 1800, opening: 'rightTT', transomHeight: 400 };
     case 'triple': return { ...base, width: 2100, height: 1400, opening: 'rightTT', divisions: [0.33, 0.33, 0.34] };
+    case 'doubleDoor': return { ...base, width: 1800, height: 2100, opening: 'bothTT', divisionRatio: 0.5 };
     default: return base;
   }
 };
@@ -279,6 +281,21 @@ function WindowDrawing({ pos, size = 360 }) {
     const w2 = innerW - w1;
     elements.push(drawSash(innerX, innerY, w1, innerH, 'leftTT', 'p1'));
     elements.push(drawSash(innerX + w1, innerY, w2, innerH, 'rightTT', 'p2'));
+  } else if (pos.type === 'doubleDoor') {
+    const ratio = pos.divisionRatio || 0.5;
+    const w1 = innerW * ratio;
+    const w2 = innerW - w1;
+    const sashF = 50 * scale;
+    const cx = innerX + w1;
+    elements.push(drawSash(innerX, innerY, w1, innerH, 'leftTT', 'dd-l'));
+    elements.push(drawSash(cx, innerY, w2, innerH, 'rightTT', 'dd-r'));
+    // tanka linija umjesto stuba: precrta centar bijelim, pa crta tanku liniju
+    elements.push(
+      <g key="dd-center">
+        <rect x={cx - sashF} y={innerY} width={sashF * 2} height={innerH} fill="white" />
+        <line x1={cx} y1={innerY} x2={cx} y2={innerY + innerH} stroke="#1a1a1a" strokeWidth="0.7" />
+      </g>
+    );
   } else if (pos.type === 'windowDoor') {
     const ratio = pos.divisionRatio || 0.5;
     const w1 = innerW * ratio;
@@ -370,7 +387,7 @@ function WindowDrawing({ pos, size = 360 }) {
       })()}
 
       {/* sub-kote za podjelu (dvokrilni / klizna / windowDoor) */}
-      {(pos.type === 'double' || pos.type === 'sliding' || pos.type === 'windowDoor') && (() => {
+      {(pos.type === 'double' || pos.type === 'sliding' || pos.type === 'windowDoor' || pos.type === 'doubleDoor') && (() => {
         const ratio = pos.divisionRatio || 0.5;
         const w1mm = Math.round(pos.width * ratio);
         const w2mm = pos.width - w1mm;
@@ -510,7 +527,7 @@ function PositionEditor({ pos, onChange, onDelete, onDuplicate, onMoveUp, onMove
           </div>
 
           {/* Podjela (ako ima 2 panela) */}
-          {(pos.type === 'double' || pos.type === 'sliding' || pos.type === 'windowDoor') && (
+          {(pos.type === 'double' || pos.type === 'sliding' || pos.type === 'windowDoor' || pos.type === 'doubleDoor') && (
             <div>
               <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">
                 Podjela: {Math.round(pos.width * (pos.divisionRatio || 0.5))} / {pos.width - Math.round(pos.width * (pos.divisionRatio || 0.5))} mm
