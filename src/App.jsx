@@ -108,6 +108,7 @@ const ELEMENT_TYPES = [
   { id: 'sliding', name: 'Klizna stijena', nameDe: 'Schiebewand' },
   { id: 'fixed', name: 'Fiksni element', nameDe: 'Festelement' },
   { id: 'transom', name: 'Prozor sa nadsvjetlom', nameDe: 'Fenster mit Oberlicht' },
+  { id: 'triple', name: 'Trokrilni prozor', nameDe: 'Dreiflügeliges Fenster' },
 ];
 
 // Default vrijednosti za novu poziciju (najčešći case za 80% ponuda)
@@ -142,6 +143,7 @@ const newPosition = (type = 'single') => {
     case 'sliding': return { ...base, width: 3000, height: 2400, opening: 'rightSlide', divisionRatio: 0.5, sashDepth: 104 };
     case 'fixed': return { ...base, opening: 'fixed' };
     case 'transom': return { ...base, height: 1800, opening: 'rightTT', transomHeight: 400 };
+    case 'triple': return { ...base, width: 2100, height: 1400, opening: 'rightTT', divisions: [0.33, 0.33, 0.34] };
     default: return base;
   }
 };
@@ -294,6 +296,17 @@ function WindowDrawing({ pos, size = 360 }) {
       elements.push(drawSash(innerX, innerY, w1, innerH, 'fixed', 'p1'));
       elements.push(drawSash(innerX + w1, innerY, w2, innerH, 'rightSlide', 'p2', true));
     }
+  } else if (pos.type === 'triple') {
+    const divs = pos.divisions || [0.33, 0.33, 0.34];
+    const wx1 = innerW * divs[0];
+    const wx2 = innerW * divs[1];
+    const wx3 = innerW * divs[2];
+    const p1Op = pos.opening === 'allTT' ? 'leftTT' : 'leftTT';
+    const p2Op = pos.opening === 'allTT' ? 'rightTT' : 'fixed';
+    const p3Op = pos.opening === 'allTT' ? 'rightTT' : 'rightTT';
+    elements.push(drawSash(innerX,           innerY, wx1, innerH, p1Op, 'tp1'));
+    elements.push(drawSash(innerX + wx1,     innerY, wx2, innerH, p2Op, 'tp2'));
+    elements.push(drawSash(innerX + wx1 + wx2, innerY, wx3, innerH, p3Op, 'tp3'));
   } else if (pos.type === 'transom') {
     const tH = (pos.transomHeight || 400) * scale;
     elements.push(
@@ -333,6 +346,28 @@ function WindowDrawing({ pos, size = 360 }) {
         <polygon points={`${x0 - dimOffsetX},${winY0 + h} ${x0 - dimOffsetX - 2},${winY0 + h - 5} ${x0 - dimOffsetX + 2},${winY0 + h - 5}`} fill="#1a1a1a" />
       </g>
       <text x={x0 - dimOffsetX - 8} y={y0 + (shutterH + h) / 2} textAnchor="middle" fill="#1a1a1a" transform={`rotate(-90, ${x0 - dimOffsetX - 8}, ${y0 + (shutterH + h) / 2})`}>{pos.height + shutterBoxH}</text>
+
+      {/* sub-kote za triple */}
+      {pos.type === 'triple' && (() => {
+        const divs = pos.divisions || [0.33, 0.33, 0.34];
+        const w1mm = Math.round(pos.width * divs[0]);
+        const w2mm = Math.round(pos.width * divs[1]);
+        const w3mm = pos.width - w1mm - w2mm;
+        const subY = winY0 + h + dimOffsetY - 16;
+        const x1 = x0 + w * divs[0];
+        const x2 = x0 + w * (divs[0] + divs[1]);
+        return (
+          <g stroke="#1a1a1a" strokeWidth="0.3" fill="#1a1a1a">
+            <line x1={x0} y1={subY - 6} x2={x0} y2={subY + 2} />
+            <line x1={x1} y1={subY - 6} x2={x1} y2={subY + 2} />
+            <line x1={x2} y1={subY - 6} x2={x2} y2={subY + 2} />
+            <line x1={x0 + w} y1={subY - 6} x2={x0 + w} y2={subY + 2} />
+            <text x={x0 + w * divs[0] / 2} y={subY} textAnchor="middle" fontSize="8">{w1mm}</text>
+            <text x={x1 + w * divs[1] / 2} y={subY} textAnchor="middle" fontSize="8">{w2mm}</text>
+            <text x={x2 + w * divs[2] / 2} y={subY} textAnchor="middle" fontSize="8">{w3mm}</text>
+          </g>
+        );
+      })()}
 
       {/* sub-kote za podjelu (dvokrilni / klizna / windowDoor) */}
       {(pos.type === 'double' || pos.type === 'sliding' || pos.type === 'windowDoor') && (() => {
@@ -456,6 +491,12 @@ function PositionEditor({ pos, onChange, onDelete, onDuplicate, onMoveUp, onMove
                   <option value="leftSlide">Klizno lijevo</option>
                   <option value="rightSlide">Klizno desno</option>
                 </>
+              ) : pos.type === 'triple' ? (
+                <>
+                  <option value="rightTT">Klasično (lijevo + fiksno + desno)</option>
+                  <option value="allTT">Sva tri (kip+otv)</option>
+                  <option value="fixed">Sve fiksno</option>
+                </>
               ) : (
                 <>
                   <option value="leftTT">Lijevo (kip+otv)</option>
@@ -477,6 +518,46 @@ function PositionEditor({ pos, onChange, onDelete, onDuplicate, onMoveUp, onMove
               <input type="range" min="0.2" max="0.8" step="0.01" value={pos.divisionRatio || 0.5} onChange={e => update('divisionRatio', +e.target.value)} className="w-full" />
             </div>
           )}
+
+          {/* Podjela za trokrilni */}
+          {pos.type === 'triple' && (() => {
+            const divs = pos.divisions || [0.33, 0.33, 0.34];
+            const w1 = Math.round(pos.width * divs[0]);
+            const w2 = Math.round(pos.width * divs[1]);
+            const w3 = pos.width - w1 - w2;
+            const split = divs[1] / ((divs[1] + divs[2]) || 1);
+            const setDiv0 = (val) => {
+              const d0 = +val;
+              const rem = 1 - d0;
+              const sp = divs[1] / ((divs[1] + divs[2]) || 1);
+              update('divisions', [d0, sp * rem, (1 - sp) * rem]);
+            };
+            const setDiv1Split = (val) => {
+              const rem = 1 - divs[0];
+              update('divisions', [divs[0], +val * rem, (1 - +val) * rem]);
+            };
+            return (
+              <div className="space-y-2">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">
+                    Prva podjela: {w1} / {w2 + w3} mm
+                  </label>
+                  <input type="range" min="0.1" max="0.8" step="0.01"
+                    value={divs[0]} onChange={e => setDiv0(e.target.value)} className="w-full" />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">
+                    Druga podjela: {w2} / {w3} mm
+                  </label>
+                  <input type="range" min="0.1" max="0.9" step="0.01"
+                    value={split} onChange={e => setDiv1Split(e.target.value)} className="w-full" />
+                </div>
+                <div className="text-[10px] text-stone-400" style={{ fontFamily: 'Geist Mono, ui-monospace, monospace' }}>
+                  Š1 {w1} / Š2 {w2} / Š3 {w3} mm
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Visina nadsvjetla */}
           {pos.type === 'transom' && (
