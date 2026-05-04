@@ -110,6 +110,7 @@ const ELEMENT_TYPES = [
   { id: 'transom', name: 'Prozor sa nadsvjetlom', nameDe: 'Fenster mit Oberlicht' },
   { id: 'triple', name: 'Trokrilni prozor', nameDe: 'Dreiflügeliges Fenster' },
   { id: 'doubleDoor', name: 'Dvokrilna balkonska vrata', nameDe: 'Zweiflügelige Balkontür' },
+  { id: 'entryDoor', name: 'Ulazna vrata', nameDe: 'Eingangstür' },
 ];
 
 // Default vrijednosti za novu poziciju (najčešći case za 80% ponuda)
@@ -146,6 +147,7 @@ const newPosition = (type = 'single') => {
     case 'transom': return { ...base, height: 1800, opening: 'rightTT', transomHeight: 400 };
     case 'triple': return { ...base, width: 2100, height: 1400, opening: 'rightTT', divisions: [0.33, 0.33, 0.34] };
     case 'doubleDoor': return { ...base, width: 1800, height: 2100, opening: 'bothTT', divisionRatio: 0.5 };
+    case 'entryDoor': return { ...base, width: 1000, height: 2100, opening: 'rightDoor', doorPanel: 'fullPanel', hasGlassPanel: false, glassPanelHeight: 600 };
     default: return base;
   }
 };
@@ -324,6 +326,31 @@ function WindowDrawing({ pos, size = 360 }) {
     elements.push(drawSash(innerX,           innerY, wx1, innerH, p1Op, 'tp1'));
     elements.push(drawSash(innerX + wx1,     innerY, wx2, innerH, p2Op, 'tp2'));
     elements.push(drawSash(innerX + wx1 + wx2, innerY, wx3, innerH, p3Op, 'tp3'));
+  } else if (pos.type === 'entryDoor') {
+    const sashF = 50 * scale;
+    const doorPanel = pos.doorPanel || 'fullPanel';
+    const gx = innerX + sashF;
+    const gy = innerY + sashF;
+    const gw = innerW - 2 * sashF;
+    const gh = innerH - 2 * sashF;
+    // sash outline
+    elements.push(<rect key="ed-frame" x={innerX} y={innerY} width={innerW} height={innerH} fill="none" stroke="#1a1a1a" strokeWidth="0.7" />);
+    if (doorPanel === 'fullPanel') {
+      elements.push(<rect key="ed-fill" x={gx} y={gy} width={gw} height={gh} fill="#e8e4dc" stroke="#1a1a1a" strokeWidth="0.4" />);
+    } else if (doorPanel === 'glassFull') {
+      elements.push(<rect key="ed-fill" x={gx} y={gy} width={gw} height={gh} fill="#dbeafe" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.8" />);
+    } else if (doorPanel === 'panelGlass') {
+      const glassH = Math.min((pos.glassPanelHeight || 600) * scale, gh - 10 * scale);
+      elements.push(<rect key="ed-glass" x={gx} y={gy} width={gw} height={glassH} fill="#dbeafe" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.8" />);
+      elements.push(<rect key="ed-panel" x={gx} y={gy + glassH} width={gw} height={gh - glassH} fill="#e8e4dc" stroke="#1a1a1a" strokeWidth="0.4" />);
+      elements.push(<line key="ed-div" x1={gx} y1={gy + glassH} x2={gx + gw} y2={gy + glassH} stroke="#1a1a1a" strokeWidth="0.7" />);
+    }
+    // knob: 60×10mm at 1050mm from bottom
+    const knobY = winY0 + h - 1050 * scale;
+    const knobW = 60 * scale;
+    const knobH = 10 * scale;
+    const knobX = (pos.opening || 'rightDoor') === 'rightDoor' ? innerX + innerW - knobW : innerX;
+    elements.push(<rect key="ed-knob" x={knobX} y={knobY - knobH / 2} width={knobW} height={knobH} fill="#1a1a1a" rx="1" />);
   } else if (pos.type === 'transom') {
     const tH = (pos.transomHeight || 400) * scale;
     elements.push(
@@ -503,7 +530,12 @@ function PositionEditor({ pos, onChange, onDelete, onDuplicate, onMoveUp, onMove
           <div>
             <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Otvaranje</label>
             <select value={pos.opening} onChange={e => update('opening', e.target.value)} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }}>
-              {pos.type === 'sliding' ? (
+              {pos.type === 'entryDoor' ? (
+                <>
+                  <option value="rightDoor">Otvaranje desno (šarke lijevo)</option>
+                  <option value="leftDoor">Otvaranje lijevo (šarke desno)</option>
+                </>
+              ) : pos.type === 'sliding' ? (
                 <>
                   <option value="leftSlide">Klizno lijevo</option>
                   <option value="rightSlide">Klizno desno</option>
@@ -581,6 +613,35 @@ function PositionEditor({ pos, onChange, onDelete, onDuplicate, onMoveUp, onMove
             <div>
               <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Visina nadsvjetla (mm)</label>
               <input type="number" value={pos.transomHeight || 400} onChange={e => update('transomHeight', +e.target.value)} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+            </div>
+          )}
+
+          {/* Panel ulaznih vrata */}
+          {pos.type === 'entryDoor' && (
+            <div>
+              <label className="block text-xs uppercase tracking-wider text-stone-500 mb-2">Panel vrata</label>
+              <div className="space-y-1">
+                {[
+                  ['fullPanel', 'Puni PVC panel'],
+                  ['panelGlass', 'Panel + staklo'],
+                  ['glassFull', 'Staklo cijelom visinom'],
+                ].map(([v, label]) => (
+                  <label key={v} className="flex items-center gap-2 text-xs cursor-pointer">
+                    <input type="radio" name={`dp-${pos.id}`} value={v}
+                      checked={(pos.doorPanel || 'fullPanel') === v}
+                      onChange={() => update('doorPanel', v)} />
+                    {label}
+                  </label>
+                ))}
+              </div>
+              {(pos.doorPanel || 'fullPanel') === 'panelGlass' && (
+                <div className="mt-2">
+                  <label className="block text-xs text-stone-500 mb-1">Visina staklenog dijela (mm)</label>
+                  <input type="number" value={pos.glassPanelHeight || 600}
+                    onChange={e => update('glassPanelHeight', +e.target.value)}
+                    className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                </div>
+              )}
             </div>
           )}
 
