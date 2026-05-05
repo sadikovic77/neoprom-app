@@ -32,7 +32,7 @@ Za izradu naših prozora i vrata koristimo okove renomiranih njemačkih proizvo�
     paymentT: "Uslovi plaćanja",
     pay70: "70 % avansno plaćanje",
     pay30: "30 % pri isporuci robe",
-    net: "Neto", vat: "PDV (17%)", gross: "Bruto",
+    net: "Neto", vat: (r) => `PDV (${r}%)`, gross: "Bruto", total: "Ukupno",
     montage: "Montaža", transport: "Transport", yes: "Da",
     deliveryT: "Uslovi isporuke", payMethod: "Način plaćanja", cash: "Gotovinski",
     pieces: "kom", width: "širina", height: "visina",
@@ -67,7 +67,7 @@ Für unsere Fenster und Türen verwenden wir Beschläge der renommierten deutsch
     paymentT: "Zahlungsbedingungen",
     pay70: "70 % Anzahlung",
     pay30: "30 % bei Lieferung",
-    net: "Netto", vat: "MwSt. (17%)", gross: "Brutto",
+    net: "Netto", vat: (r) => `MwSt. (${r}%)`, gross: "Brutto", total: "Gesamt",
     montage: "Montage", transport: "Transport", yes: "Ja",
     deliveryT: "Lieferbedingungen", payMethod: "Zahlungsart", cash: "Bar",
     pieces: "Stk.", width: "Breite", height: "Höhe",
@@ -962,7 +962,9 @@ function PdfPreview({ doc, lang, currency, showPrices }) {
   );
   const explicitNet = doc.netOverride && doc.netOverride > 0 ? doc.netOverride : null;
   const finalNet = explicitNet || totalNet;
-  const vat = finalNet * 0.17;
+  const vatRate = doc.vatRate ?? 17;
+  const vatEnabled = doc.vatEnabled ?? true;
+  const vat = vatEnabled ? finalNet * vatRate / 100 : 0;
   const gross = finalNet + vat;
 
   return (
@@ -1110,9 +1112,15 @@ function PdfPreview({ doc, lang, currency, showPrices }) {
             <div className="text-right">
               <table style={{ fontFamily: 'Geist Mono, ui-monospace, monospace' }} className="text-[11px]">
                 <tbody>
-                  <tr><td className="pr-6 text-stone-600">{t.net}:</td><td className="text-right">{fmt(finalNet, currency)}</td></tr>
-                  <tr><td className="pr-6 text-stone-600">{t.vat}:</td><td className="text-right">{fmt(vat, currency)}</td></tr>
-                  <tr className="text-base font-semibold border-t" style={{ borderColor: '#1a1a1a' }}><td className="pr-6 pt-1">{t.gross}:</td><td className="text-right pt-1">{fmt(gross, currency)}</td></tr>
+                  {vatEnabled ? (
+                    <>
+                      <tr><td className="pr-6 text-stone-600">{t.net}:</td><td className="text-right">{fmt(finalNet, currency)}</td></tr>
+                      <tr><td className="pr-6 text-stone-600">{t.vat(vatRate)}:</td><td className="text-right">{fmt(vat, currency)}</td></tr>
+                      <tr className="text-base font-semibold border-t" style={{ borderColor: '#1a1a1a' }}><td className="pr-6 pt-1">{t.gross}:</td><td className="text-right pt-1">{fmt(gross, currency)}</td></tr>
+                    </>
+                  ) : (
+                    <tr className="text-base font-semibold"><td className="pr-6">{t.total}:</td><td className="text-right">{fmt(finalNet, currency)}</td></tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -1193,6 +1201,8 @@ const createEmptyDoc = (quotes = []) => ({
   customerId: null,
   positions: [],
   netOverride: 0,
+  vatRate: 17,
+  vatEnabled: true,
 });
 
 const loadStorage = () => {
@@ -1590,6 +1600,25 @@ export default function App() {
               <div className="bg-white border p-4" style={{ borderColor: '#e5e5e0' }}>
                 <label className="block text-[10px] uppercase tracking-wider text-stone-500 mb-1">Neto override (ostavi prazno za auto)</label>
                 <input type="number" value={doc.netOverride || ''} onChange={e => setDoc({ ...doc, netOverride: +e.target.value })} placeholder="Auto-zbroj iz pozicija" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+              </div>
+
+              {/* PDV */}
+              <div className="bg-white border p-4" style={{ borderColor: '#e5e5e0' }}>
+                <div className="text-xs uppercase tracking-wider text-stone-500 mb-2">PDV</div>
+                <label className="flex items-center gap-2 text-xs mb-2 cursor-pointer">
+                  <input type="checkbox" checked={doc.vatEnabled ?? true}
+                    onChange={e => setDoc({ ...doc, vatEnabled: e.target.checked })} />
+                  Obračunaj PDV
+                </label>
+                {(doc.vatEnabled ?? true) && (
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wider text-stone-500 mb-1">Stopa PDV-a (%)</label>
+                    <input type="number" value={doc.vatRate ?? 17}
+                      onChange={e => setDoc({ ...doc, vatRate: +e.target.value })}
+                      min="0" max="30" step="0.5"
+                      className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                  </div>
+                )}
               </div>
             </div>
           )}
