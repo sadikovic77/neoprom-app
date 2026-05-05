@@ -221,6 +221,9 @@ function WindowDrawing({ pos, size = 360 }) {
         {/* okvir krila */}
         <rect x={panelX} y={panelY} width={panelW} height={panelH} fill="none" stroke="#1a1a1a" strokeWidth="0.7" />
         <rect x={innerX} y={innerY} width={innerW} height={innerH} fill="#dbeafe" stroke="#1a1a1a" strokeWidth="0.5" opacity="0.8" />
+        {pos.hasMosquitoNet && (
+          <rect x={innerX} y={innerY} width={innerW} height={innerH} fill="url(#mosquito-mesh)" opacity="0.4" />
+        )}
         {/* ručka */}
         {!isSlide && opening !== 'fixed' && opening !== 'tilt' && (
           <circle
@@ -411,22 +414,6 @@ function WindowDrawing({ pos, size = 360 }) {
     elements.push(drawSash(innerX, innerY + tH, innerW, innerH - tH, pos.opening, 'tr-bot'));
   }
 
-  // === Simbol mreže protiv insekata ===
-  if (pos.hasMosquitoNet) {
-    const mx = innerX + innerW - 14;
-    const my = innerY + 2;
-    elements.push(
-      <g key="net">
-        <text x={mx + 6} y={my - 1} textAnchor="middle" fontSize="6" fill="#1a1a1a">M</text>
-        <rect x={mx} y={my} width={12} height={12} fill="white" stroke="#1a1a1a" strokeWidth="0.3" />
-        <line x1={mx} y1={my + 4} x2={mx + 12} y2={my + 4} stroke="#1a1a1a" strokeWidth="0.3" />
-        <line x1={mx} y1={my + 8} x2={mx + 12} y2={my + 8} stroke="#1a1a1a" strokeWidth="0.3" />
-        <line x1={mx + 4} y1={my} x2={mx + 4} y2={my + 12} stroke="#1a1a1a" strokeWidth="0.3" />
-        <line x1={mx + 8} y1={my} x2={mx + 8} y2={my + 12} stroke="#1a1a1a" strokeWidth="0.3" />
-      </g>
-    );
-  }
-
   // === Mjerne linije (kote) ===
   const dimX = x0 + w / 2;
   const dimY = y0 + h / 2;
@@ -435,6 +422,12 @@ function WindowDrawing({ pos, size = 360 }) {
 
   return (
     <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full" style={{ fontFamily: 'Geist Mono, ui-monospace, monospace', fontSize: '10px' }}>
+      <defs>
+        <pattern id="mosquito-mesh" width="8" height="8" patternUnits="userSpaceOnUse">
+          <path d="M 0 0 L 8 0" fill="none" stroke="#4a4a4a" strokeWidth="0.5" />
+          <path d="M 0 0 L 0 8" fill="none" stroke="#4a4a4a" strokeWidth="0.5" />
+        </pattern>
+      </defs>
       {/* drawing */}
       {elements}
 
