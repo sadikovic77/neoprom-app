@@ -88,7 +88,9 @@ const OPENING_LABEL = {
     leftSlide: "Klizno lijevo",
     rightSlide: "Klizno desno",
     leftOpen: "Lijevo (samo otv)",
-    rightOpen: "Desno (samo otv)"
+    rightOpen: "Desno (samo otv)",
+    bottomHung: "Donja kip",
+    topHung: "Gornja kip (padajući)"
   },
   de: {
     fixed: "Fest",
@@ -99,7 +101,9 @@ const OPENING_LABEL = {
     leftSlide: "Schiebe links",
     rightSlide: "Schiebe rechts",
     leftOpen: "Links (nur Drehen)",
-    rightOpen: "Rechts (nur Drehen)"
+    rightOpen: "Rechts (nur Drehen)",
+    bottomHung: "Klappöffnung unten",
+    topHung: "Klappöffnung oben"
   }
 };
 
@@ -209,6 +213,10 @@ function WindowDrawing({ pos, size = 360 }) {
       lines.push(`M ${innerR} ${innerT} L ${innerL} ${cy} L ${innerR} ${innerB}`);
     } else if (opening === 'rightOpen') {
       lines.push(`M ${innerL} ${innerT} L ${innerR} ${cy} L ${innerL} ${innerB}`);
+    } else if (opening === 'bottomHung') {
+      lines.push(`M ${innerL} ${innerB} L ${cx} ${innerT} L ${innerR} ${innerB}`);
+    } else if (opening === 'topHung') {
+      lines.push(`M ${innerL} ${innerT} L ${cx} ${innerB} L ${innerR} ${innerT}`);
     }
     return lines;
   };
@@ -669,6 +677,8 @@ function PositionEditor({ pos, onChange, onDelete, onDuplicate, onMoveUp, onMove
                       <option value="leftOpen">Lijevo (samo otv)</option>
                       <option value="rightOpen">Desno (samo otv)</option>
                       <option value="tilt">Samo kip</option>
+                      <option value="bottomHung">Donja kip</option>
+                      <option value="topHung">Gornja kip (padajući)</option>
                       <option value="fixed">Fiksno</option>
                     </select>
                   </div>
@@ -701,6 +711,8 @@ function PositionEditor({ pos, onChange, onDelete, onDuplicate, onMoveUp, onMove
                     <option value="rightTT">Desno (kip+otv)</option>
                     <option value="bothTT">Lijevo-desno (kip oba)</option>
                     <option value="tilt">Samo kip</option>
+                    <option value="bottomHung">Donja kip</option>
+                    <option value="topHung">Gornja kip (padajući)</option>
                     <option value="fixed">Fiksno</option>
                   </>
                 )}
