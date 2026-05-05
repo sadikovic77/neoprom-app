@@ -86,7 +86,9 @@ const OPENING_LABEL = {
     bothTT: "Lijevo-desno (kip oba)",
     tilt: "Samo kip",
     leftSlide: "Klizno lijevo",
-    rightSlide: "Klizno desno"
+    rightSlide: "Klizno desno",
+    leftOpen: "Lijevo (samo otv)",
+    rightOpen: "Desno (samo otv)"
   },
   de: {
     fixed: "Fest",
@@ -95,7 +97,9 @@ const OPENING_LABEL = {
     bothTT: "Links-Rechts (beide Dreh-Kipp)",
     tilt: "Nur Kipp",
     leftSlide: "Schiebe links",
-    rightSlide: "Schiebe rechts"
+    rightSlide: "Schiebe rechts",
+    leftOpen: "Links (nur Drehen)",
+    rightOpen: "Rechts (nur Drehen)"
   }
 };
 
@@ -144,18 +148,18 @@ const newPosition = (type = 'single') => {
   };
   switch (type) {
     case 'single': return { ...base, opening: 'rightTT' };
-    case 'double': return { ...base, width: 1500, opening: 'bothTT', divisionRatio: 0.5 };
+    case 'double': return { ...base, width: 1500, opening: 'bothTT', divisionRatio: 0.5, panelOpenings: ['leftTT', 'rightTT'] };
     case 'door': return { ...base, width: 900, height: 2100, opening: 'rightTT' };
-    case 'windowDoor': return { ...base, width: 1800, height: 2100, opening: 'rightTT', divisionRatio: 0.6 };
+    case 'windowDoor': return { ...base, width: 1800, height: 2100, opening: 'rightTT', divisionRatio: 0.6, panelOpenings: ['leftTT', 'rightTT'] };
     case 'sliding': return { ...base, width: 3000, height: 2400, opening: 'rightSlide', divisionRatio: 0.5, sashDepth: 104 };
     case 'fixed': return { ...base, opening: 'fixed' };
     case 'transom': return { ...base, height: 1800, opening: 'rightTT', transomHeight: 400 };
-    case 'triple': return { ...base, width: 2100, height: 1400, opening: 'rightTT', divisions: [0.33, 0.33, 0.34] };
-    case 'doubleDoor': return { ...base, width: 1800, height: 2100, opening: 'bothTT', divisionRatio: 0.5 };
+    case 'triple': return { ...base, width: 2100, height: 1400, opening: 'rightTT', divisions: [0.33, 0.33, 0.34], panelOpenings: ['leftTT', 'fixed', 'rightTT'] };
+    case 'doubleDoor': return { ...base, width: 1800, height: 2100, opening: 'bothTT', divisionRatio: 0.5, panelOpenings: ['leftTT', 'rightTT'] };
     case 'entryDoor': return { ...base, width: 1000, height: 2100, opening: 'rightDoor', doorPanel: 'fullPanel', hasGlassPanel: false, glassPanelHeight: 600 };
     case 'sliding3': return { ...base, width: 4500, height: 2400, opening: 'centerSlide', divisions: [0.33, 0.34, 0.33], sashDepth: 104 };
     case 'panelCombo': return { ...base, width: 1500, height: 2000, opening: 'rightTT', panelHeight: 900 };
-    case 'sideLight': return { ...base, width: 1800, height: 2100, opening: 'rightTT', sideLightPosition: 'right', sideLightWidth: 500 };
+    case 'sideLight': return { ...base, width: 1800, height: 2100, opening: 'rightTT', sideLightPosition: 'right', sideLightWidth: 500, panelOpenings: ['rightTT', 'fixed'] };
     default: return base;
   }
 };
@@ -201,6 +205,10 @@ function WindowDrawing({ pos, size = 360 }) {
       lines.push(`M ${innerL} ${innerT} L ${cx} ${innerB} L ${innerR} ${innerT}`);
     } else if (opening === 'tilt') {
       lines.push(`M ${innerL} ${innerT} L ${cx} ${innerB} L ${innerR} ${innerT}`);
+    } else if (opening === 'leftOpen') {
+      lines.push(`M ${innerR} ${innerT} L ${innerL} ${cy} L ${innerR} ${innerB}`);
+    } else if (opening === 'rightOpen') {
+      lines.push(`M ${innerL} ${innerT} L ${innerR} ${cy} L ${innerL} ${innerB}`);
     }
     return lines;
   };
@@ -227,7 +235,7 @@ function WindowDrawing({ pos, size = 360 }) {
         {/* ručka */}
         {!isSlide && opening !== 'fixed' && opening !== 'tilt' && (
           <circle
-            cx={opening === 'leftTT' ? panelX + panelW - sashF / 2 : panelX + sashF / 2}
+            cx={opening === 'leftTT' || opening === 'leftOpen' ? panelX + panelW - sashF / 2 : panelX + sashF / 2}
             cy={cy}
             r="2.5"
             fill="#1a1a1a"
@@ -292,16 +300,18 @@ function WindowDrawing({ pos, size = 360 }) {
     const ratio = pos.divisionRatio || 0.5;
     const w1 = innerW * ratio;
     const w2 = innerW - w1;
-    elements.push(drawSash(innerX, innerY, w1, innerH, 'leftTT', 'p1'));
-    elements.push(drawSash(innerX + w1, innerY, w2, innerH, 'rightTT', 'p2'));
+    const po = pos.panelOpenings || ['leftTT', 'rightTT'];
+    elements.push(drawSash(innerX, innerY, w1, innerH, po[0], 'p1'));
+    elements.push(drawSash(innerX + w1, innerY, w2, innerH, po[1], 'p2'));
   } else if (pos.type === 'doubleDoor') {
     const ratio = pos.divisionRatio || 0.5;
     const w1 = innerW * ratio;
     const w2 = innerW - w1;
     const sashF = 50 * scale;
     const cx = innerX + w1;
-    elements.push(drawSash(innerX, innerY, w1, innerH, 'leftTT', 'dd-l'));
-    elements.push(drawSash(cx, innerY, w2, innerH, 'rightTT', 'dd-r'));
+    const po = pos.panelOpenings || ['leftTT', 'rightTT'];
+    elements.push(drawSash(innerX, innerY, w1, innerH, po[0], 'dd-l'));
+    elements.push(drawSash(cx, innerY, w2, innerH, po[1], 'dd-r'));
     // tanka linija umjesto stuba: precrta centar bijelim, pa crta tanku liniju
     elements.push(
       <g key="dd-center">
@@ -313,8 +323,9 @@ function WindowDrawing({ pos, size = 360 }) {
     const ratio = pos.divisionRatio || 0.5;
     const w1 = innerW * ratio;
     const w2 = innerW - w1;
-    elements.push(drawSash(innerX, innerY, w1, innerH, 'leftTT', 'p1'));
-    elements.push(drawSash(innerX + w1, innerY, w2, innerH, pos.opening, 'p2'));
+    const po = pos.panelOpenings || ['leftTT', pos.opening];
+    elements.push(drawSash(innerX, innerY, w1, innerH, po[0], 'p1'));
+    elements.push(drawSash(innerX + w1, innerY, w2, innerH, po[1], 'p2'));
   } else if (pos.type === 'sliding') {
     const ratio = pos.divisionRatio || 0.5;
     const w1 = innerW * ratio;
@@ -331,20 +342,25 @@ function WindowDrawing({ pos, size = 360 }) {
     const wx1 = innerW * divs[0];
     const wx2 = innerW * divs[1];
     const wx3 = innerW * divs[2];
-    const p1Op = pos.opening === 'allTT' ? 'leftTT' : 'leftTT';
-    const p2Op = pos.opening === 'allTT' ? 'rightTT' : 'fixed';
-    const p3Op = pos.opening === 'allTT' ? 'rightTT' : 'rightTT';
-    elements.push(drawSash(innerX,           innerY, wx1, innerH, p1Op, 'tp1'));
-    elements.push(drawSash(innerX + wx1,     innerY, wx2, innerH, p2Op, 'tp2'));
-    elements.push(drawSash(innerX + wx1 + wx2, innerY, wx3, innerH, p3Op, 'tp3'));
+    const defaultPO = pos.opening === 'allTT' ? ['leftTT', 'rightTT', 'rightTT'] : ['leftTT', 'fixed', 'rightTT'];
+    const po = pos.panelOpenings || defaultPO;
+    elements.push(drawSash(innerX,             innerY, wx1, innerH, po[0],          'tp1'));
+    elements.push(drawSash(innerX + wx1,       innerY, wx2, innerH, po[1],          'tp2'));
+    elements.push(drawSash(innerX + wx1 + wx2, innerY, wx3, innerH, po[2] || 'rightTT', 'tp3'));
   } else if (pos.type === 'sideLight') {
     const slW = Math.min((pos.sideLightWidth || 500) * scale, innerW - 10 * scale);
     const mainW = innerW - slW;
     const isRight = (pos.sideLightPosition || 'right') === 'right';
-    const mainX = isRight ? innerX : innerX + slW;
-    const slX   = isRight ? innerX + mainW : innerX;
-    elements.push(drawSash(mainX, innerY, mainW, innerH, pos.opening, 'sl-main'));
-    elements.push(drawSash(slX,   innerY, slW,   innerH, 'fixed',     'sl-side'));
+    const defaultPO = isRight ? [pos.opening, 'fixed'] : ['fixed', pos.opening];
+    const po = pos.panelOpenings || defaultPO;
+    // po[0] = lijevi panel, po[1] = desni panel
+    if (isRight) {
+      elements.push(drawSash(innerX,          innerY, mainW, innerH, po[0], 'sl-p1'));
+      elements.push(drawSash(innerX + mainW,  innerY, slW,   innerH, po[1], 'sl-p2'));
+    } else {
+      elements.push(drawSash(innerX,          innerY, slW,   innerH, po[0], 'sl-p1'));
+      elements.push(drawSash(innerX + slW,    innerY, mainW, innerH, po[1], 'sl-p2'));
+    }
   } else if (pos.type === 'panelCombo') {
     const pH = (pos.panelHeight || 900) * scale;          // visina panela u px
     const glassH = innerH - pH;                           // visina stakla u px
@@ -627,42 +643,70 @@ function PositionEditor({ pos, onChange, onDelete, onDuplicate, onMoveUp, onMove
           </div>
 
           {/* Otvaranje */}
-          <div>
-            <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Otvaranje</label>
-            <select value={pos.opening} onChange={e => update('opening', e.target.value)} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }}>
-              {pos.type === 'entryDoor' ? (
-                <>
-                  <option value="rightDoor">Otvaranje desno (šarke lijevo)</option>
-                  <option value="leftDoor">Otvaranje lijevo (šarke desno)</option>
-                </>
-              ) : pos.type === 'sliding3' ? (
-                <>
-                  <option value="centerSlide">Klizi sredina</option>
-                  <option value="leftSlide">Klizi lijevo</option>
-                  <option value="rightSlide">Klizi desno</option>
-                </>
-              ) : pos.type === 'sliding' ? (
-                <>
-                  <option value="leftSlide">Klizno lijevo</option>
-                  <option value="rightSlide">Klizno desno</option>
-                </>
-              ) : pos.type === 'triple' ? (
-                <>
-                  <option value="rightTT">Klasično (lijevo + fiksno + desno)</option>
-                  <option value="allTT">Sva tri (kip+otv)</option>
-                  <option value="fixed">Sve fiksno</option>
-                </>
-              ) : (
-                <>
-                  <option value="leftTT">Lijevo (kip+otv)</option>
-                  <option value="rightTT">Desno (kip+otv)</option>
-                  <option value="bothTT">Lijevo-desno (kip oba)</option>
-                  <option value="tilt">Samo kip</option>
-                  <option value="fixed">Fiksno</option>
-                </>
-              )}
-            </select>
-          </div>
+          {/* Otvaranje */}
+          {['double', 'doubleDoor', 'windowDoor', 'triple', 'sideLight'].includes(pos.type) ? (() => {
+            const panelCount = { double: 2, doubleDoor: 2, windowDoor: 2, triple: 3, sideLight: 2 }[pos.type];
+            const defaultPO = {
+              double: ['leftTT', 'rightTT'],
+              doubleDoor: ['leftTT', 'rightTT'],
+              windowDoor: ['leftTT', 'rightTT'],
+              triple: ['leftTT', 'fixed', 'rightTT'],
+              sideLight: (pos.sideLightPosition || 'right') === 'right' ? ['rightTT', 'fixed'] : ['fixed', 'rightTT'],
+            }[pos.type];
+            const po = (pos.panelOpenings && pos.panelOpenings.length === panelCount)
+              ? pos.panelOpenings : defaultPO;
+            const updatePO = (i, val) => { const next = [...po]; next[i] = val; update('panelOpenings', next); };
+            return (
+              <div className="space-y-2">
+                <label className="block text-xs uppercase tracking-wider text-stone-500">Otvaranje po panelima</label>
+                {po.map((op, i) => (
+                  <div key={i}>
+                    <label className="block text-[10px] text-stone-500 mb-0.5">Panel {i + 1}</label>
+                    <select value={op} onChange={e => updatePO(i, e.target.value)}
+                      className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }}>
+                      <option value="leftTT">Lijevo (kip+otv)</option>
+                      <option value="rightTT">Desno (kip+otv)</option>
+                      <option value="leftOpen">Lijevo (samo otv)</option>
+                      <option value="rightOpen">Desno (samo otv)</option>
+                      <option value="tilt">Samo kip</option>
+                      <option value="fixed">Fiksno</option>
+                    </select>
+                  </div>
+                ))}
+              </div>
+            );
+          })() : (
+            <div>
+              <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Otvaranje</label>
+              <select value={pos.opening} onChange={e => update('opening', e.target.value)} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }}>
+                {pos.type === 'entryDoor' ? (
+                  <>
+                    <option value="rightDoor">Otvaranje desno (šarke lijevo)</option>
+                    <option value="leftDoor">Otvaranje lijevo (šarke desno)</option>
+                  </>
+                ) : pos.type === 'sliding3' ? (
+                  <>
+                    <option value="centerSlide">Klizi sredina</option>
+                    <option value="leftSlide">Klizi lijevo</option>
+                    <option value="rightSlide">Klizi desno</option>
+                  </>
+                ) : pos.type === 'sliding' ? (
+                  <>
+                    <option value="leftSlide">Klizno lijevo</option>
+                    <option value="rightSlide">Klizno desno</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="leftTT">Lijevo (kip+otv)</option>
+                    <option value="rightTT">Desno (kip+otv)</option>
+                    <option value="bothTT">Lijevo-desno (kip oba)</option>
+                    <option value="tilt">Samo kip</option>
+                    <option value="fixed">Fiksno</option>
+                  </>
+                )}
+              </select>
+            </div>
+          )}
 
           {/* Podjela (ako ima 2 panela) */}
           {(pos.type === 'double' || pos.type === 'sliding' || pos.type === 'windowDoor' || pos.type === 'doubleDoor') && (
