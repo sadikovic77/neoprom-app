@@ -139,6 +139,8 @@ const newPosition = (type = 'single') => {
     shutterBoxHeight: 200,
     shutterBoxType: 'outside',
     shutterControl: 'belt',
+    hasMosquitoNet: false,
+    mosquitoNetType: 'harmo',
   };
   switch (type) {
     case 'single': return { ...base, opening: 'rightTT' };
@@ -407,6 +409,22 @@ function WindowDrawing({ pos, size = 360 }) {
     );
     elements.push(drawSash(innerX, innerY, innerW, tH, 'fixed', 'tr-top'));
     elements.push(drawSash(innerX, innerY + tH, innerW, innerH - tH, pos.opening, 'tr-bot'));
+  }
+
+  // === Simbol mreže protiv insekata ===
+  if (pos.hasMosquitoNet) {
+    const mx = innerX + innerW - 14;
+    const my = innerY + 2;
+    elements.push(
+      <g key="net">
+        <text x={mx + 6} y={my - 1} textAnchor="middle" fontSize="6" fill="#1a1a1a">M</text>
+        <rect x={mx} y={my} width={12} height={12} fill="white" stroke="#1a1a1a" strokeWidth="0.3" />
+        <line x1={mx} y1={my + 4} x2={mx + 12} y2={my + 4} stroke="#1a1a1a" strokeWidth="0.3" />
+        <line x1={mx} y1={my + 8} x2={mx + 12} y2={my + 8} stroke="#1a1a1a" strokeWidth="0.3" />
+        <line x1={mx + 4} y1={my} x2={mx + 4} y2={my + 12} stroke="#1a1a1a" strokeWidth="0.3" />
+        <line x1={mx + 8} y1={my} x2={mx + 8} y2={my + 12} stroke="#1a1a1a" strokeWidth="0.3" />
+      </g>
+    );
   }
 
   // === Mjerne linije (kote) ===
@@ -844,6 +862,27 @@ function PositionEditor({ pos, onChange, onDelete, onDuplicate, onMoveUp, onMove
             </div>
           </details>
 
+          {/* Mreža protiv insekata */}
+          <details className="text-xs">
+            <summary className="cursor-pointer text-stone-500 uppercase tracking-wider">Mreža protiv insekata</summary>
+            <div className="space-y-2 mt-2">
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={pos.hasMosquitoNet || false}
+                  onChange={e => update('hasMosquitoNet', e.target.checked)} />
+                Postavi mrežu
+              </label>
+              {pos.hasMosquitoNet && (
+                <select value={pos.mosquitoNetType || 'harmo'}
+                  onChange={e => update('mosquitoNetType', e.target.value)}
+                  className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }}>
+                  <option value="harmo">Harmo (plisirana)</option>
+                  <option value="roller">Roletna mreža</option>
+                  <option value="fixed">Fiksna mreža</option>
+                </select>
+              )}
+            </div>
+          </details>
+
           {/* Akcije */}
           <div className="flex gap-2 pt-2 border-t" style={{ borderColor: '#e5e5e0' }}>
             <button onClick={onDuplicate} className="flex items-center gap-1 text-xs text-stone-600 hover:text-stone-900 px-2 py-1">
@@ -958,6 +997,10 @@ function PdfPreview({ doc, lang, currency, showPrices }) {
               <div><span className="font-semibold">{t.sashProf}:</span> {p.sashProfile}, {t.sashDepth} {p.sashDepth} mm</div>
               {(() => {
                 const autoLines = [];
+                if (p.hasMosquitoNet && !p.accessories.some(a => a.toLowerCase().includes('mreža'))) {
+                  const netLabel = { harmo: 'Harmo plisirana', roller: 'Roletna mreža', fixed: 'Fiksna mreža' }[p.mosquitoNetType || 'harmo'];
+                  autoLines.push(`Mreža protiv insekata: ${netLabel}`);
+                }
                 if (p.hasShutter && !p.accessories.some(a => a.toLowerCase().includes('roletna'))) {
                   const type = p.shutterBoxType === 'inside' ? 'unutarnja' : 'vanjska';
                   const ctrl = { belt: 'traka (gurtna)', crank: 'ručica', motor: 'motor' }[p.shutterControl || 'belt'];
