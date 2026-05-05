@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(awk '/^const newPosition = / {start=NR} start && /^}; *$/ && NR > start {print start\"-\"NR; start=0}' /c/Projects/neoprom-app/src/App.jsx)",
+      "Bash(awk '/^function WindowDrawing/ {start=NR} start && /^};/ && NR > start {print start\"-\"NR; start=0}' /c/Projects/neoprom-app/src/App.jsx)",
+      "Bash(awk '/^function PdfPreview/ {start=NR} start && /^};/ && NR > start {print start\"-\"NR; start=0; exit}' /c/Projects/neoprom-app/src/App.jsx)",
+      "Bash(awk '/^function PositionEditor/ {start=NR} start && /^}$/ && NR > start+10 {print start\"-\"NR; exit}' /c/Projects/neoprom-app/src/App.jsx)",
+      "Bash(awk '/^function CustomerAutocomplete/ {start=NR} start && /^}$/ && NR > start {print start\"-\"NR; exit}' /c/Projects/neoprom-app/src/App.jsx)",
+      "Bash(awk '/^function QuoteListItem/ {start=NR} start && /^}$/ && NR > start {print start\"-\"NR; exit}' /c/Projects/neoprom-app/src/App.jsx)"
+    ]
+  }
+}
