@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Plus, Trash2, Copy, Printer, FileText, Eye, EyeOff, ChevronDown, ChevronUp } from 'lucide-react';
 import CustomersManager from './CustomersManager';
 import { getCustomers, saveCustomer } from './utils/customers';
+import { getTemplates, saveTemplate, deleteTemplate } from './utils/templates';
 
 // ===== PRIJEVODI ZA DOKUMENT (PDF izlaz) =====
 const T = {
@@ -599,6 +600,8 @@ const getElementName = (type, lang) => {
 function PositionEditor({ pos, onChange, onDelete, onDuplicate, onMoveUp, onMoveDown, expanded, onToggle, index, lang }) {
   const update = (field, val) => onChange({ ...pos, [field]: val });
   const t = T[lang];
+  const [showSaveTpl, setShowSaveTpl] = useState(false);
+  const [tplName, setTplName] = useState('');
 
   return (
     <div style={{ borderColor: '#e5e5e0' }} className="border bg-white">
@@ -933,13 +936,29 @@ function PositionEditor({ pos, onChange, onDelete, onDuplicate, onMoveUp, onMove
           </details>
 
           {/* Akcije */}
-          <div className="flex gap-2 pt-2 border-t" style={{ borderColor: '#e5e5e0' }}>
+          <div className="flex flex-wrap gap-2 pt-2 border-t" style={{ borderColor: '#e5e5e0' }}>
             <button onClick={onDuplicate} className="flex items-center gap-1 text-xs text-stone-600 hover:text-stone-900 px-2 py-1">
               <Copy size={12} /> Dupliciraj
             </button>
             <button onClick={onDelete} className="flex items-center gap-1 text-xs text-red-600 hover:text-red-800 px-2 py-1">
               <Trash2 size={12} /> Obriši
             </button>
+            {showSaveTpl ? (
+              <div className="flex items-center gap-1 w-full mt-1">
+                <input autoFocus value={tplName} onChange={e => setTplName(e.target.value)}
+                  placeholder="Ime template-a"
+                  className="flex-1 px-2 py-1 border text-xs" style={{ borderColor: '#d4d4cf' }} />
+                <button onClick={() => { if (tplName.trim()) { saveTemplate(tplName.trim(), pos); } setShowSaveTpl(false); setTplName(''); }}
+                  className="text-xs px-2 py-1 text-white" style={{ background: '#1f3a5f' }}>OK</button>
+                <button onClick={() => { setShowSaveTpl(false); setTplName(''); }}
+                  className="text-xs px-2 py-1 text-stone-400">✕</button>
+              </div>
+            ) : (
+              <button onClick={() => { setTplName(`${getElementName(pos.type, lang)} ${pos.width}×${pos.height}`); setShowSaveTpl(true); }}
+                className="flex items-center gap-1 text-xs text-stone-600 hover:text-stone-900 px-2 py-1">
+                <FileText size={12} /> Template
+              </button>
+            )}
             <div className="ml-auto flex gap-1">
               <button onClick={onMoveUp} className="text-xs px-2 py-1 text-stone-500 hover:text-stone-900">↑</button>
               <button onClick={onMoveDown} className="text-xs px-2 py-1 text-stone-500 hover:text-stone-900">↓</button>
@@ -1333,6 +1352,9 @@ export default function App() {
   const [view, setView] = useState('split'); // 'split' | 'preview'
   const [currentView, setCurrentView] = useState('quotes'); // 'quotes' | 'customers'
   const [customerSavedToast, setCustomerSavedToast] = useState(false);
+  const [showTemplateMenu, setShowTemplateMenu] = useState(false);
+  const [templates, setTemplates] = useState([]);
+  const [confirmDeleteTpl, setConfirmDeleteTpl] = useState(null);
 
   const updatePos = (id, newPos) => {
     setDoc({ ...doc, positions: doc.positions.map(p => p.id === id ? newPos : p) });
@@ -1365,6 +1387,13 @@ export default function App() {
     const newPositions = [...doc.positions];
     [newPositions[idx], newPositions[newIdx]] = [newPositions[newIdx], newPositions[idx]];
     setDoc({ ...doc, positions: newPositions });
+  };
+
+  const addPosFromTemplate = (tpl) => {
+    const pos = { ...tpl.position, id: crypto.randomUUID() };
+    setDoc({ ...doc, positions: [...doc.positions, pos] });
+    setShowTemplateMenu(false);
+    setConfirmDeleteTpl(null);
   };
 
   const newQuote = () => {
@@ -1563,17 +1592,55 @@ export default function App() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <div className="text-xs uppercase tracking-wider text-stone-500">Pozicije ({doc.positions.length})</div>
-                  <div className="relative">
-                    <button onClick={() => setShowAddMenu(!showAddMenu)} className="flex items-center gap-1 text-xs px-2 py-1 text-white" style={{ background: '#1f3a5f' }}>
-                      <Plus size={12} /> Dodaj
-                    </button>
-                    {showAddMenu && (
-                      <div className="absolute right-0 top-full mt-1 bg-white border shadow-lg z-20" style={{ borderColor: '#d4d4cf' }}>
-                        {ELEMENT_TYPES.map(t => (
-                          <button key={t.id} onClick={() => addPos(t.id)} className="block w-full text-left px-3 py-2 text-xs hover:bg-stone-50 whitespace-nowrap">{t.name}</button>
-                        ))}
-                      </div>
-                    )}
+                  <div className="flex items-center gap-1">
+                    {/* Iz template-a */}
+                    <div className="relative">
+                      <button onClick={() => { setTemplates(getTemplates()); setShowTemplateMenu(!showTemplateMenu); setConfirmDeleteTpl(null); }}
+                        className="text-xs px-2 py-1 border" style={{ borderColor: '#d4d4cf', color: '#6b6b6b' }}>
+                        Iz template-a
+                      </button>
+                      {showTemplateMenu && (
+                        <div className="absolute right-0 top-full mt-1 bg-white border shadow-lg z-20 w-56" style={{ borderColor: '#d4d4cf' }}>
+                          {templates.length === 0 ? (
+                            <div className="px-3 py-2 text-xs text-stone-400">Nema spremljenih template-a</div>
+                          ) : (
+                            templates.map(tpl => (
+                              <div key={tpl.id} className="flex items-center px-3 py-2 border-b hover:bg-stone-50" style={{ borderColor: '#f0f0ec' }}>
+                                <button className="flex-1 text-left text-xs truncate" onClick={() => addPosFromTemplate(tpl)}>
+                                  {tpl.name}
+                                </button>
+                                {confirmDeleteTpl === tpl.id ? (
+                                  <div className="flex gap-1 ml-2 shrink-0" onClick={e => e.stopPropagation()}>
+                                    <button onClick={() => { deleteTemplate(tpl.id); setTemplates(getTemplates()); setConfirmDeleteTpl(null); }}
+                                      className="text-[10px] text-red-600 hover:underline">Da</button>
+                                    <button onClick={() => setConfirmDeleteTpl(null)}
+                                      className="text-[10px] text-stone-400 hover:underline">Ne</button>
+                                  </div>
+                                ) : (
+                                  <button onClick={e => { e.stopPropagation(); setConfirmDeleteTpl(tpl.id); }}
+                                    className="ml-2 shrink-0 text-stone-300 hover:text-red-500">
+                                    <Trash2 size={11} />
+                                  </button>
+                                )}
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {/* Dodaj */}
+                    <div className="relative">
+                      <button onClick={() => setShowAddMenu(!showAddMenu)} className="flex items-center gap-1 text-xs px-2 py-1 text-white" style={{ background: '#1f3a5f' }}>
+                        <Plus size={12} /> Dodaj
+                      </button>
+                      {showAddMenu && (
+                        <div className="absolute right-0 top-full mt-1 bg-white border shadow-lg z-20" style={{ borderColor: '#d4d4cf' }}>
+                          {ELEMENT_TYPES.map(t => (
+                            <button key={t.id} onClick={() => addPos(t.id)} className="block w-full text-left px-3 py-2 text-xs hover:bg-stone-50 whitespace-nowrap">{t.name}</button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
