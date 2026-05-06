@@ -1,7 +1,10 @@
 import React from 'react';
 
-export default function WindowDrawing({ pos, size = 360 }) {
-  const PAD_LEFT = 60, PAD_RIGHT = 30, PAD_TOP = 20, PAD_BOTTOM = 50;
+export default function WindowDrawing({ pos, size = 360, showDims = true }) {
+  const PAD_LEFT   = showDims ? 60 : 10;
+  const PAD_RIGHT  = showDims ? 30 : 10;
+  const PAD_TOP    = showDims ? 20 : 10;
+  const PAD_BOTTOM = showDims ? 50 : 10;
   const drawW = size - PAD_LEFT - PAD_RIGHT;
   const drawH = size - PAD_TOP - PAD_BOTTOM;
 
@@ -256,6 +259,7 @@ export default function WindowDrawing({ pos, size = 360 }) {
       </defs>
       {elements}
 
+      {showDims && <>
       {/* horizontalna kota */}
       <g stroke="#1a1a1a" strokeWidth="0.4">
         <line x1={x0} y1={winY0 + h + dimOffsetY - 6} x2={x0} y2={winY0 + h + dimOffsetY + 6} />
@@ -379,6 +383,7 @@ export default function WindowDrawing({ pos, size = 360 }) {
           <text x={x0 - dimOffsetX + 6} y={y0 + shutterH / 2 + 3} textAnchor="end" fontSize="8">{shutterBoxH}</text>
         </g>
       )}
+      </>}
     </svg>
   );
 }

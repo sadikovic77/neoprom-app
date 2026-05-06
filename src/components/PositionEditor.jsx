@@ -27,8 +27,8 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
             {pos.width} × {pos.height} mm · {pos.quantity} {t.pieces}
           </div>
         </div>
-        <div className="w-28 h-28 shrink-0 bg-stone-50 border" style={{ borderColor: '#e5e5e0' }}>
-          <WindowDrawing pos={pos} size={110} />
+        <div className="shrink-0 bg-stone-50 border" style={{ borderColor: '#e5e5e0', width: 112, height: 112 }}>
+          <WindowDrawing pos={pos} size={112} showDims={false} />
         </div>
         {expanded ? <ChevronUp size={18} className="text-stone-400" /> : <ChevronDown size={18} className="text-stone-400" />}
       </div>

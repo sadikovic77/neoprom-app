@@ -1,17 +1,17 @@
 export const ELEMENT_TYPES = [
   { id: 'single', name: 'Jednokrilni prozor', nameDe: 'Einflügeliges Fenster' },
   { id: 'double', name: 'Dvokrilni prozor', nameDe: 'Zweiflügeliges Fenster' },
-  { id: 'door', name: 'Balkonska vrata', nameDe: 'Balkontür' },
-  { id: 'windowDoor', name: 'Prozor + balkonska vrata', nameDe: 'Fenster + Balkontür' },
-  { id: 'sliding', name: 'Klizna stijena', nameDe: 'Schiebewand' },
+  { id: 'triple', name: 'Trokrilni prozor', nameDe: 'Dreiflügeliges Fenster' },
   { id: 'fixed', name: 'Fiksni element', nameDe: 'Festelement' },
   { id: 'transom', name: 'Prozor sa nadsvjetlom', nameDe: 'Fenster mit Oberlicht' },
-  { id: 'triple', name: 'Trokrilni prozor', nameDe: 'Dreiflügeliges Fenster' },
-  { id: 'doubleDoor', name: 'Dvokrilna balkonska vrata', nameDe: 'Zweiflügelige Balkontür' },
-  { id: 'entryDoor', name: 'Ulazna vrata', nameDe: 'Eingangstür' },
-  { id: 'sliding3', name: 'Klizna stijena 3-djelna', nameDe: 'Schiebewand 3-teilig' },
-  { id: 'panelCombo', name: 'Kombinovani panel', nameDe: 'Kombi-Element mit Paneel' },
   { id: 'sideLight', name: 'Prozor sa bočnim svjetlom', nameDe: 'Fenster mit Seitenteil' },
+  { id: 'panelCombo', name: 'Kombinovani panel', nameDe: 'Kombi-Element mit Paneel' },
+  { id: 'door', name: 'Balkonska vrata', nameDe: 'Balkontür' },
+  { id: 'doubleDoor', name: 'Dvokrilna balkonska vrata', nameDe: 'Zweiflügelige Balkontür' },
+  { id: 'windowDoor', name: 'Prozor + balkonska vrata', nameDe: 'Fenster + Balkontür' },
+  { id: 'entryDoor', name: 'Ulazna vrata', nameDe: 'Eingangstür' },
+  { id: 'sliding', name: 'Klizna stijena', nameDe: 'Schiebewand' },
+  { id: 'sliding3', name: 'Klizna stijena 3-djelna', nameDe: 'Schiebewand 3-teilig' },
 ];
 
 export const newPosition = (type = 'single', lang = 'bs') => {

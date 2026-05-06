@@ -66,15 +66,13 @@ export default function PdfPreview({ doc, lang, currency, showPrices }) {
 
       {/* POZICIJE */}
       <div className="px-12 py-8 print-page">
-        <div className="flex justify-between items-baseline mb-4 pb-2 border-b-2" style={{ borderColor: '#1a1a1a' }}>
-          <div className="grid grid-cols-12 gap-2 w-full text-[9px] uppercase tracking-wider text-stone-500">
-            <div className="col-span-1">{t.pos}</div>
-            <div className="col-span-1">{t.qty}</div>
-            <div className="col-span-6">{t.desc}</div>
-            {showPrices && <div className="col-span-2 text-right">{t.uPrice}</div>}
-            {showPrices && <div className="col-span-2 text-right">{t.lTotal}</div>}
-            {!showPrices && <div className="col-span-4"></div>}
-          </div>
+        <div className="flex gap-4 mb-4 pb-2 border-b-2 text-[9px] uppercase tracking-wider text-stone-500" style={{ borderColor: '#1a1a1a' }}>
+          <div className="w-12 shrink-0">{t.pos}</div>
+          <div className="w-56 shrink-0"></div>
+          <div className="flex-1 min-w-0">{t.desc}</div>
+          <div className="w-12 shrink-0 text-center">{t.qty}</div>
+          {showPrices && <div className="w-20 shrink-0 text-right">{t.uPrice}</div>}
+          {showPrices && <div className="w-24 shrink-0 text-right">{t.lTotal}</div>}
         </div>
 
         {doc.positions.map((p, i) => (
@@ -87,7 +85,7 @@ export default function PdfPreview({ doc, lang, currency, showPrices }) {
                 <WindowDrawing pos={p} size={220} />
               </div>
             </div>
-            <div className="flex-1 text-[10px] leading-relaxed">
+            <div className="flex-1 min-w-0 text-[10px] leading-relaxed">
               <div><span className="font-semibold">{t.system}:</span> {p.systemName}</div>
               <div><span className="font-semibold">{t.element}:</span> {getElementName(p.type, lang)}</div>
               <div><span className="font-semibold">{t.dims}:</span> {t.width} {p.width} mm × {t.height} {p.height} mm</div>
