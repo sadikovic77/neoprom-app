@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { T, OPENING_LABEL } from '../translations';
 import { fmt, getElementName } from '../utils/format';
+import { getPanelShutters, getPanelCount } from '../elementTypes';
 import WindowDrawing from './WindowDrawing';
 
 export default function PdfPreview({ doc, lang, currency, showPrices }) {
@@ -101,11 +102,18 @@ export default function PdfPreview({ doc, lang, currency, showPrices }) {
                   const netLabel = { harmo: t.mosquitoNetHarmo, roller: t.mosquitoNetRoller, fixed: t.mosquitoNetFixed }[p.mosquitoNetType || 'harmo'];
                   autoLines.push(`${t.mosquitoNetLabel}: ${netLabel}`);
                 }
-                if (p.hasShutter && !p.accessories.some(a => a.toLowerCase().includes('roletna') || a.toLowerCase().includes('rollladen'))) {
+                const panelShutters = getPanelShutters(p);
+                const anyShutter = panelShutters.some(Boolean);
+                if (anyShutter && !p.accessories.some(a => a.toLowerCase().includes('roletna') || a.toLowerCase().includes('rollladen'))) {
                   const shutterType = p.shutterBoxType === 'inside' ? t.shutterInside : t.shutterOutside;
                   const ctrl = { belt: t.shutterBelt, crank: t.shutterCrank, motor: t.shutterMotor }[p.shutterControl || 'belt'];
                   const bh = p.shutterBoxHeight || 200;
-                  autoLines.push(`${t.shutterLabel}: ${shutterType} ${t.shutterAlu}, ${bh}×${bh}`);
+                  const count = getPanelCount(p.type);
+                  const panelLabels = count === 2 ? ['L', 'D'] : count === 3 ? ['L', 'M', 'D'] : null;
+                  const shutterDesc = panelLabels && !panelShutters.every(Boolean)
+                    ? panelShutters.map((s, i) => s ? panelLabels[i] : null).filter(Boolean).join(', ')
+                    : null;
+                  autoLines.push(`${t.shutterLabel}${shutterDesc ? ` (${shutterDesc})` : ''}: ${shutterType} ${t.shutterAlu}, ${bh}×${bh}`);
                   autoLines.push(`${t.shutterControlLabel}: ${ctrl}`);
                 }
                 const all = [...p.accessories, ...autoLines];

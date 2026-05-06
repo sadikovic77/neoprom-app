@@ -61,3 +61,13 @@ export const newPosition = (type = 'single', lang = 'bs') => {
     default: return base;
   }
 };
+
+const PANEL_COUNT = { double: 2, triple: 3, doubleDoor: 2, windowDoor: 2, sideLight: 2, sliding: 2, sliding3: 3 };
+
+export const getPanelCount = (type) => PANEL_COUNT[type] || 1;
+
+export const getPanelShutters = (pos) => {
+  const count = getPanelCount(pos.type);
+  if (pos.shutters && pos.shutters.length === count) return pos.shutters;
+  return Array(count).fill(pos.hasShutter ?? false);
+};

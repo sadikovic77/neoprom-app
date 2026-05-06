@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Copy, Trash2, ChevronDown, ChevronUp, FileText } from 'lucide-react';
 import { T } from '../translations';
-import { ELEMENT_TYPES, newPosition } from '../elementTypes';
+import { ELEMENT_TYPES, newPosition, getPanelCount, getPanelShutters } from '../elementTypes';
 import { getElementName } from '../utils/format';
 import { saveTemplate } from '../utils/templates';
 import WindowDrawing from './WindowDrawing';
@@ -351,37 +351,54 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
           <details className="text-xs">
             <summary className="cursor-pointer text-stone-500 uppercase tracking-wider">Roletna</summary>
             <div className="space-y-2 mt-2">
-              <label className="flex items-center gap-2">
-                <input type="checkbox" checked={pos.hasShutter || false}
-                  onChange={e => update('hasShutter', e.target.checked)} />
-                Postavi roletnu
-              </label>
-              {pos.hasShutter && (<>
-                <div>
-                  <label className="block text-stone-400 mb-1">Visina kutije (mm)</label>
-                  <input type="number" value={pos.shutterBoxHeight || 200}
-                    onChange={e => update('shutterBoxHeight', +e.target.value)}
-                    min="100" max="300" step="5"
-                    className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
-                </div>
-                <div className="flex gap-4">
-                  {[['outside', 'Vanjska kutija'], ['inside', 'Unutarnja kutija']].map(([v, label]) => (
-                    <label key={v} className="flex items-center gap-1.5 cursor-pointer">
-                      <input type="radio" name={`sht-${pos.id}`} value={v}
-                        checked={(pos.shutterBoxType || 'outside') === v}
-                        onChange={() => update('shutterBoxType', v)} />
-                      {label}
-                    </label>
-                  ))}
-                </div>
-                <select value={pos.shutterControl || 'belt'}
-                  onChange={e => update('shutterControl', e.target.value)}
-                  className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }}>
-                  <option value="belt">Upravljanje: Traka (gurtna)</option>
-                  <option value="crank">Upravljanje: Ručica</option>
-                  <option value="motor">Upravljanje: Motor</option>
-                </select>
-              </>)}
+              {(() => {
+                const count = getPanelCount(pos.type);
+                const shutters = getPanelShutters(pos);
+                const anyShutter = shutters.some(Boolean);
+                const panelLabels = count === 2 ? ['Lijevo', 'Desno'] : count === 3 ? ['Lijevo', 'Sredina', 'Desno'] : ['Roletna'];
+                const updateShutters = (i, val) => {
+                  if (count === 1) { update('hasShutter', val); return; }
+                  const next = [...shutters]; next[i] = val;
+                  onChange({ ...pos, shutters: next, hasShutter: next.some(Boolean) });
+                };
+                return (<>
+                  <div className={count > 1 ? 'flex gap-4' : ''}>
+                    {shutters.map((s, i) => (
+                      <label key={i} className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={s}
+                          onChange={e => updateShutters(i, e.target.checked)} />
+                        {panelLabels[i]}
+                      </label>
+                    ))}
+                  </div>
+                  {anyShutter && (<>
+                    <div>
+                      <label className="block text-stone-400 mb-1">Visina kutije (mm)</label>
+                      <input type="number" value={pos.shutterBoxHeight || 200}
+                        onChange={e => update('shutterBoxHeight', +e.target.value)}
+                        min="100" max="300" step="5"
+                        className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
+                    </div>
+                    <div className="flex gap-4">
+                      {[['outside', 'Vanjska kutija'], ['inside', 'Unutarnja kutija']].map(([v, label]) => (
+                        <label key={v} className="flex items-center gap-1.5 cursor-pointer">
+                          <input type="radio" name={`sht-${pos.id}`} value={v}
+                            checked={(pos.shutterBoxType || 'outside') === v}
+                            onChange={() => update('shutterBoxType', v)} />
+                          {label}
+                        </label>
+                      ))}
+                    </div>
+                    <select value={pos.shutterControl || 'belt'}
+                      onChange={e => update('shutterControl', e.target.value)}
+                      className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }}>
+                      <option value="belt">Upravljanje: Traka (gurtna)</option>
+                      <option value="crank">Upravljanje: Ručica</option>
+                      <option value="motor">Upravljanje: Motor</option>
+                    </select>
+                  </>)}
+                </>);
+              })()}
             </div>
           </details>
 

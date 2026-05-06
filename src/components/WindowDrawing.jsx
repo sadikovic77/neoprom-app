@@ -1,4 +1,5 @@
 import React from 'react';
+import { getPanelShutters } from '../elementTypes';
 
 export default function WindowDrawing({ pos, size = 360, showDims = true }) {
   const PAD_LEFT   = showDims ? 60 : 10;
@@ -8,7 +9,9 @@ export default function WindowDrawing({ pos, size = 360, showDims = true }) {
   const drawW = size - PAD_LEFT - PAD_RIGHT;
   const drawH = size - PAD_TOP - PAD_BOTTOM;
 
-  const shutterBoxH = pos.hasShutter ? (pos.shutterBoxHeight || 200) : 0;
+  const panelShutters = getPanelShutters(pos);
+  const anyShutter = panelShutters.some(Boolean);
+  const shutterBoxH = anyShutter ? (pos.shutterBoxHeight || 200) : 0;
   const scale = Math.min(drawW / pos.width, drawH / (pos.height + shutterBoxH));
   const w = pos.width * scale;
   const h = pos.height * scale;
@@ -92,16 +95,40 @@ export default function WindowDrawing({ pos, size = 360, showDims = true }) {
 
   const elements = [];
 
-  if (pos.hasShutter) {
+  if (anyShutter) {
+    const getPanelBoxes = () => {
+      const ratio = pos.divisionRatio || 0.5;
+      const divs = pos.divisions || [0.33, 0.33, 0.34];
+      if (pos.type === 'double' || pos.type === 'doubleDoor' || pos.type === 'windowDoor' || pos.type === 'sliding') {
+        return [{ px: x0, pw: w * ratio }, { px: x0 + w * ratio, pw: w * (1 - ratio) }];
+      } else if (pos.type === 'triple' || pos.type === 'sliding3') {
+        return [
+          { px: x0, pw: w * divs[0] },
+          { px: x0 + w * divs[0], pw: w * divs[1] },
+          { px: x0 + w * (divs[0] + divs[1]), pw: w * divs[2] },
+        ];
+      } else if (pos.type === 'sideLight') {
+        const slW = Math.min((pos.sideLightWidth || 500) * scale, w - 10 * scale);
+        const mainW = w - slW;
+        return (pos.sideLightPosition || 'right') === 'right'
+          ? [{ px: x0, pw: mainW }, { px: x0 + mainW, pw: slW }]
+          : [{ px: x0, pw: slW }, { px: x0 + slW, pw: mainW }];
+      }
+      return [{ px: x0, pw: w }];
+    };
+    const boxes = getPanelBoxes();
+    const fill = pos.shutterBoxType === 'inside' ? '#f0f0f0' : 'white';
     elements.push(
       <g key="shutter-box">
-        <rect x={x0} y={y0} width={w} height={shutterH}
-          fill={pos.shutterBoxType === 'inside' ? '#f0f0f0' : 'white'}
-          stroke="#1a1a1a" strokeWidth="1.2" />
-        <line x1={x0} y1={y0 + shutterH / 2} x2={x0 + w} y2={y0 + shutterH / 2}
-          stroke="#1a1a1a" strokeWidth="0.4" strokeDasharray="3,2" />
-        <text x={x0 + w / 2} y={y0 + shutterH / 2 + 2.5}
-          textAnchor="middle" fontSize="7" fill="#1a1a1a">ROLETNA</text>
+        {boxes.map(({ px, pw }, i) => panelShutters[i] && (
+          <g key={i}>
+            <rect x={px} y={y0} width={pw} height={shutterH} fill={fill} stroke="#1a1a1a" strokeWidth="1.2" />
+            <line x1={px} y1={y0 + shutterH / 2} x2={px + pw} y2={y0 + shutterH / 2}
+              stroke="#1a1a1a" strokeWidth="0.4" strokeDasharray="3,2" />
+            <text x={px + pw / 2} y={y0 + shutterH / 2 + 2.5}
+              textAnchor="middle" fontSize="7" fill="#1a1a1a">ROL</text>
+          </g>
+        ))}
       </g>
     );
   }
