@@ -405,14 +405,10 @@ export default function WindowDrawing({ pos, size = 360, showDims = true }) {
       {/* sub-kota za roletnu */}
       {anyShutter && shutterH > 0 && (
         <g stroke="#1a1a1a" strokeWidth="0.3" fill="#1a1a1a">
-          {(() => {
-            const subX = x0 - dimOffsetX + 14;
-            return (<>
-              <line x1={subX - 4} y1={y0}    x2={subX + 2} y2={y0} />
-              <line x1={subX - 4} y1={winY0} x2={subX + 2} y2={winY0} />
-              <text x={subX - 2} y={y0 + shutterH / 2 + 3} textAnchor="end" fontSize="8">{shutterBoxH}</text>
-            </>);
-          })()}
+          <line x1={x0 - 8} y1={y0}    x2={x0 - 2} y2={y0} />
+          <line x1={x0 - 8} y1={winY0} x2={x0 - 2} y2={winY0} />
+          <line x1={x0 - 5} y1={y0}    x2={x0 - 5} y2={winY0} />
+          <text x={x0 - 16} y={y0 + shutterH / 2 + 3} textAnchor="middle" fontSize="8">{shutterBoxH}</text>
         </g>
       )}
 
