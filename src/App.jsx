@@ -212,9 +212,9 @@ export default function App() {
         body { background: #f5f5f0; }
       `}</style>
 
-      <div className="min-h-screen" style={{ background: '#fafaf7', fontFamily: 'Geist, system-ui, sans-serif', color: '#1a1a1a' }}>
+      <div className="h-screen flex flex-col" style={{ background: '#fafaf7', fontFamily: 'Geist, system-ui, sans-serif', color: '#1a1a1a' }}>
         {/* TOP BAR */}
-        <div className="border-b sticky top-0 z-10" style={{ background: '#fafaf7', borderColor: '#e5e5e0', printColorAdjust: 'exact' }}>
+        <div className="border-b shrink-0 z-10" style={{ background: '#fafaf7', borderColor: '#e5e5e0', printColorAdjust: 'exact' }}>
           <div className="px-6 py-3 flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <img src="/neoprom-icon.svg" alt="Neoprom" style={{ height: '28px', display: 'block' }} />
@@ -271,10 +271,10 @@ export default function App() {
         </div>
 
         {/* CUSTOMERS VIEW */}
-        {currentView === 'customers' && <CustomersManager />}
+        {currentView === 'customers' && <div className="flex-1 overflow-y-auto"><CustomersManager /></div>}
 
         {/* MAIN GRID */}
-        {currentView === 'quotes' && <div className={view === 'split' ? "grid grid-cols-1 lg:grid-cols-[240px_420px_1fr]" : "p-6"}>
+        {currentView === 'quotes' && <div className={view === 'split' ? "flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-[240px_420px_1fr]" : "flex-1 overflow-y-auto p-6"}>
 
           {/* QUOTES LIST SIDEBAR */}
           {view === 'split' && (
@@ -290,7 +290,7 @@ export default function App() {
 
           {/* EDITOR PANEL */}
           {view === 'split' && (
-            <div className="space-y-4 p-6 border-r overflow-y-auto" style={{ borderColor: '#e5e5e0' }}>
+            <div className="space-y-4 p-6 border-r overflow-y-auto h-full" style={{ borderColor: '#e5e5e0' }}>
               {/* Header info */}
               <div className="bg-white border p-4" style={{ borderColor: '#e5e5e0' }}>
                 <div className="text-xs uppercase tracking-wider text-stone-500 mb-3">Podaci o ponudi</div>
@@ -455,14 +455,14 @@ export default function App() {
           )}
 
           {/* PREVIEW PANEL */}
-          <div className="bg-stone-200 p-4 lg:p-8 overflow-auto">
+          <div className="bg-stone-200 p-4 lg:p-8 overflow-auto h-full">
             <div className="mx-auto shadow-lg" style={{ width: '210mm', minHeight: '297mm', background: 'white' }}>
               <PdfPreview doc={doc} lang={lang} currency={currency} showPrices={showPrices} />
             </div>
           </div>
         </div>}
 
-        <div className="text-center text-[10px] text-stone-400 py-4 border-t" style={{ borderColor: '#e5e5e0' }}>
+        <div className="shrink-0 text-center text-[10px] text-stone-400 py-4 border-t" style={{ borderColor: '#e5e5e0' }}>
           Demo · Neoprom Engineering · Generator ponuda v0.1
         </div>
       </div>

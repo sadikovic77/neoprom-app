@@ -132,14 +132,30 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
           )}
 
           {/* Podjela (2 panela) */}
-          {(pos.type === 'double' || pos.type === 'sliding' || pos.type === 'windowDoor' || pos.type === 'doubleDoor') && (
-            <div>
-              <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">
-                Podjela: {Math.round(pos.width * (pos.divisionRatio || 0.5))} / {pos.width - Math.round(pos.width * (pos.divisionRatio || 0.5))} mm
-              </label>
-              <input type="range" min="0.2" max="0.8" step="0.01" value={pos.divisionRatio || 0.5} onChange={e => update('divisionRatio', +e.target.value)} className="w-full" />
-            </div>
-          )}
+          {(pos.type === 'double' || pos.type === 'sliding' || pos.type === 'windowDoor' || pos.type === 'doubleDoor') && (() => {
+            const ratio = pos.divisionRatio || 0.5;
+            const w1 = Math.round(pos.width * ratio);
+            const w2 = pos.width - w1;
+            const setMm = (mm) => {
+              const clamped = Math.max(Math.round(pos.width * 0.2), Math.min(Math.round(pos.width * 0.8), mm));
+              update('divisionRatio', clamped / pos.width);
+            };
+            return (
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">
+                  Podjela: {w1} / {w2} mm
+                </label>
+                <div className="flex items-center gap-2">
+                  <input type="range" min="0.2" max="0.8" step={1 / pos.width}
+                    value={ratio} onChange={e => update('divisionRatio', +e.target.value)} className="flex-1" />
+                  <input type="number" value={w1} onChange={e => setMm(+e.target.value)}
+                    min={Math.round(pos.width * 0.2)} max={Math.round(pos.width * 0.8)}
+                    className="w-20 px-2 py-1 border text-sm text-right shrink-0"
+                    style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Podjela za trokrilni i sliding3 */}
           {(pos.type === 'triple' || pos.type === 'sliding3') && (() => {

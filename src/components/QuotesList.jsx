@@ -52,7 +52,7 @@ export default function QuotesList({ quotes, currentId, onSelect, onNew, onDelet
     q.number.toLowerCase().includes(search.toLowerCase())
   );
   return (
-    <div className="flex flex-col border-r overflow-hidden" style={{ borderColor: '#e5e5e0', background: 'white' }}>
+    <div className="flex flex-col border-r overflow-hidden h-full" style={{ borderColor: '#e5e5e0', background: 'white' }}>
       <div className="p-3 border-b" style={{ borderColor: '#e5e5e0' }}>
         <div className="flex items-center justify-between mb-2">
           <div className="text-[10px] uppercase tracking-wider text-stone-500">Sve ponude</div>
