@@ -6,17 +6,21 @@ import { getElementName } from '../utils/format';
 import { saveTemplate } from '../utils/templates';
 import WindowDrawing from './WindowDrawing';
 
-function MmInput({ value, min, max, onChange, className, style }) {
-  const [local, setLocal] = useState(String(value));
-  useEffect(() => { setLocal(String(value)); }, [value]);
+function NumInput({ value, min, max, step = 1, onChange, className, style }) {
+  const [local, setLocal] = useState(String(value ?? ''));
+  useEffect(() => { setLocal(String(value ?? '')); }, [value]);
   const commit = () => {
-    const n = parseInt(local, 10);
-    if (!isNaN(n)) onChange(Math.max(min, Math.min(max, n)));
-    else setLocal(String(value));
+    const n = step === 1 ? parseInt(local, 10) : parseFloat(local);
+    if (!isNaN(n)) {
+      const clamped = (min != null && max != null) ? Math.max(min, Math.min(max, n)) : n;
+      onChange(clamped);
+    } else {
+      onChange(0);
+    }
   };
   return (
     <input
-      type="number" value={local}
+      type="number" value={local} step={step}
       onChange={e => setLocal(e.target.value)}
       onBlur={commit}
       onKeyDown={e => e.key === 'Enter' && commit()}
@@ -25,6 +29,8 @@ function MmInput({ value, min, max, onChange, className, style }) {
     />
   );
 }
+
+const MmInput = (props) => <NumInput {...props} step={1} />;
 
 export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, onMoveUp, onMoveDown, expanded, onToggle, index, lang }) {
   const update = (field, val) => onChange({ ...pos, [field]: val });
@@ -315,11 +321,11 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Količina</label>
-              <input type="number" value={pos.quantity} onChange={e => update('quantity', +e.target.value)} min="1" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+              <NumInput value={pos.quantity} onChange={v => update('quantity', Math.max(1, v || 1))} min={1} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
             </div>
             <div>
               <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Cijena/kom</label>
-              <input type="number" value={pos.unitPrice} onChange={e => update('unitPrice', +e.target.value)} step="0.01" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+              <NumInput value={pos.unitPrice} onChange={v => update('unitPrice', v ?? 0)} step={0.01} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
             </div>
           </div>
 
