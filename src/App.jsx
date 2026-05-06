@@ -82,6 +82,34 @@ export default function App() {
 
   const [lang, setLang] = useState('bs');
   const [currency, setCurrency] = useState('KM');
+
+  const FIELD_TRANSLATIONS = {
+    color: { "bijela / antracit": "weiß / anthrazit", "weiß / anthrazit": "bijela / antracit" },
+    glass: {
+      "troslojno, 44 mm (4/16/4/18/4) LOW-E Argon (Ug = 0,6)": "dreifach, 44 mm (4/16/4/18/4) LOW-E Argon (Ug = 0,6)",
+      "dreifach, 44 mm (4/16/4/18/4) LOW-E Argon (Ug = 0,6)": "troslojno, 44 mm (4/16/4/18/4) LOW-E Argon (Ug = 0,6)",
+    },
+    systemName: {
+      "Deceuninck Elegant 76 MD ili ekvivalentan model": "Deceuninck Elegant 76 MD oder gleichwertiges Modell",
+      "Deceuninck Elegant 76 MD oder gleichwertiges Modell": "Deceuninck Elegant 76 MD ili ekvivalentan model",
+    },
+    accessories: {
+      "Zaštita od insekata: (sistem Harmo)": "Insektenschutz: (System Harmo)",
+      "Insektenschutz: (System Harmo)": "Zaštita od insekata: (sistem Harmo)",
+    },
+  };
+
+  const translatePositions = (positions) => positions.map(p => {
+    const updated = { ...p };
+    for (const field of ['color', 'glass', 'systemName']) {
+      const map = FIELD_TRANSLATIONS[field];
+      if (map && map[p[field]]) updated[field] = map[p[field]];
+    }
+    if (Array.isArray(p.accessories)) {
+      updated.accessories = p.accessories.map(a => FIELD_TRANSLATIONS.accessories[a] ?? a);
+    }
+    return updated;
+  });
   const [showPrices, setShowPrices] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
@@ -97,7 +125,7 @@ export default function App() {
   };
 
   const addPos = (type) => {
-    setDoc({ ...doc, positions: [...doc.positions, newPosition(type)] });
+    setDoc({ ...doc, positions: [...doc.positions, newPosition(type, lang)] });
     setShowAddMenu(false);
   };
 
@@ -210,7 +238,7 @@ export default function App() {
             <div className="flex items-center gap-1 text-xs">
               <span className="text-stone-500 mr-1">Jezik:</span>
               {['bs', 'de'].map(l => (
-                <button key={l} onClick={() => setLang(l)} className="px-2 py-1 uppercase tracking-wider" style={{ background: lang === l ? '#1f3a5f' : 'transparent', color: lang === l ? 'white' : '#6b6b6b' }}>{l}</button>
+                <button key={l} onClick={() => { if (l !== lang) { setLang(l); setDoc({ ...doc, positions: translatePositions(doc.positions) }); } }} className="px-2 py-1 uppercase tracking-wider" style={{ background: lang === l ? '#1f3a5f' : 'transparent', color: lang === l ? 'white' : '#6b6b6b' }}>{l}</button>
               ))}
             </div>
 
@@ -293,7 +321,7 @@ export default function App() {
                       onChange={name => setDoc({ ...doc, customer: { ...doc.customer, name }, customerId: null })}
                       onSelect={c => {
                         setDoc({ ...doc, customer: { name: c.name, address: c.address }, customerId: c.id });
-                        if (c.language) setLang(c.language);
+                        if (c.language && c.language !== lang) { setLang(c.language); setDoc({ ...doc, positions: translatePositions(doc.positions) }); } else if (c.language) setLang(c.language);
                         if (c.currency) setCurrency(c.currency);
                       }}
                     />

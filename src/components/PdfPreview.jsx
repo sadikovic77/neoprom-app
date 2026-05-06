@@ -99,16 +99,16 @@ export default function PdfPreview({ doc, lang, currency, showPrices }) {
               <div><span className="font-semibold">{t.sashProf}:</span> {p.sashProfile}, {t.sashDepth} {p.sashDepth} mm</div>
               {(() => {
                 const autoLines = [];
-                if (p.hasMosquitoNet && !p.accessories.some(a => a.toLowerCase().includes('mreža'))) {
-                  const netLabel = { harmo: 'Harmo plisirana', roller: 'Roletna mreža', fixed: 'Fiksna mreža' }[p.mosquitoNetType || 'harmo'];
-                  autoLines.push(`Mreža protiv insekata: ${netLabel}`);
+                if (p.hasMosquitoNet && !p.accessories.some(a => a.toLowerCase().includes('mreža') || a.toLowerCase().includes('insekt'))) {
+                  const netLabel = { harmo: t.mosquitoNetHarmo, roller: t.mosquitoNetRoller, fixed: t.mosquitoNetFixed }[p.mosquitoNetType || 'harmo'];
+                  autoLines.push(`${t.mosquitoNetLabel}: ${netLabel}`);
                 }
-                if (p.hasShutter && !p.accessories.some(a => a.toLowerCase().includes('roletna'))) {
-                  const type = p.shutterBoxType === 'inside' ? 'unutarnja' : 'vanjska';
-                  const ctrl = { belt: 'traka (gurtna)', crank: 'ručica', motor: 'motor' }[p.shutterControl || 'belt'];
+                if (p.hasShutter && !p.accessories.some(a => a.toLowerCase().includes('roletna') || a.toLowerCase().includes('rollladen'))) {
+                  const shutterType = p.shutterBoxType === 'inside' ? t.shutterInside : t.shutterOutside;
+                  const ctrl = { belt: t.shutterBelt, crank: t.shutterCrank, motor: t.shutterMotor }[p.shutterControl || 'belt'];
                   const bh = p.shutterBoxHeight || 200;
-                  autoLines.push(`Roletna: ${type} ALU termoizolaciona, ${bh}×${bh}`);
-                  autoLines.push(`Upravljanje: ${ctrl}`);
+                  autoLines.push(`${t.shutterLabel}: ${shutterType} ${t.shutterAlu}, ${bh}×${bh}`);
+                  autoLines.push(`${t.shutterControlLabel}: ${ctrl}`);
                 }
                 const all = [...p.accessories, ...autoLines];
                 return all.length > 0 ? (

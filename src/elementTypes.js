@@ -14,7 +14,8 @@ export const ELEMENT_TYPES = [
   { id: 'sideLight', name: 'Prozor sa bočnim svjetlom', nameDe: 'Fenster mit Seitenteil' },
 ];
 
-export const newPosition = (type = 'single') => {
+export const newPosition = (type = 'single', lang = 'bs') => {
+  const isDe = lang === 'de';
   const base = {
     id: crypto.randomUUID(),
     type,
@@ -22,15 +23,19 @@ export const newPosition = (type = 'single') => {
     height: 1500,
     quantity: 1,
     unitPrice: 0,
-    color: "bijela / antracit",
-    glass: "troslojno, 44 mm (4/16/4/18/4) LOW-E Argon (Ug = 0,6)",
+    color: isDe ? "weiß / anthrazit" : "bijela / antracit",
+    glass: isDe
+      ? "dreifach, 44 mm (4/16/4/18/4) LOW-E Argon (Ug = 0,6)"
+      : "troslojno, 44 mm (4/16/4/18/4) LOW-E Argon (Ug = 0,6)",
     fitting: "Siegenia Titan AF RC 2",
     frameProfile: "88172",
     frameDepth: 76,
     sashProfile: "88271",
     sashDepth: 78,
-    accessories: ["Zaštita od insekata: (sistem Harmo)"],
-    systemName: "Deceuninck Elegant 76 MD ili ekvivalentan model",
+    accessories: isDe ? ["Insektenschutz: (System Harmo)"] : ["Zaštita od insekata: (sistem Harmo)"],
+    systemName: isDe
+      ? "Deceuninck Elegant 76 MD oder gleichwertiges Modell"
+      : "Deceuninck Elegant 76 MD ili ekvivalentan model",
     customDescription: "",
     hasShutter: false,
     shutterBoxHeight: 200,

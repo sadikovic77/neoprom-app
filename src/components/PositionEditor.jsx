@@ -38,7 +38,7 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
           {/* Tip */}
           <div>
             <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Tip elementa</label>
-            <select value={pos.type} onChange={e => onChange({ ...newPosition(e.target.value), id: pos.id, quantity: pos.quantity, unitPrice: pos.unitPrice })} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }}>
+            <select value={pos.type} onChange={e => onChange({ ...newPosition(e.target.value, lang), id: pos.id, quantity: pos.quantity, unitPrice: pos.unitPrice })} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }}>
               {ELEMENT_TYPES.map(t => (
                 <option key={t.id} value={t.id}>{t.name}</option>
               ))}

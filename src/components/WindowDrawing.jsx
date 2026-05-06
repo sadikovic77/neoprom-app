@@ -334,18 +334,19 @@ export default function WindowDrawing({ pos, size = 360 }) {
       {pos.type === 'panelCombo' && (() => {
         const pHmm = pos.panelHeight || 900;
         const pHscaled = pHmm * scale;
-        const glassHmm = pos.height - 140 - pHmm;
-        const subX = x0 - dimOffsetX + 14;
+        const glassHmm = pos.height - 2 * 70 - pHmm;
+        const subX = x0 + w + 6;
         const topY = winY0 + f;
         const midY = winY0 + f + innerH - pHscaled;
         const botY = winY0 + f + innerH;
         return (
           <g stroke="#1a1a1a" strokeWidth="0.3" fill="#1a1a1a">
-            <line x1={subX - 4} y1={topY} x2={subX + 2} y2={topY} />
-            <line x1={subX - 4} y1={midY} x2={subX + 2} y2={midY} />
-            <line x1={subX - 4} y1={botY} x2={subX + 2} y2={botY} />
-            <text x={subX - 2} y={topY + (midY - topY) / 2 + 3} textAnchor="end" fontSize="8">{glassHmm}</text>
-            <text x={subX - 2} y={midY + pHscaled / 2 + 3} textAnchor="end" fontSize="8">{pHmm}</text>
+            <line x1={subX - 2} y1={topY} x2={subX + 6} y2={topY} />
+            <line x1={subX - 2} y1={midY} x2={subX + 6} y2={midY} />
+            <line x1={subX - 2} y1={botY} x2={subX + 6} y2={botY} />
+            <line x1={subX + 2} y1={topY} x2={subX + 2} y2={botY} />
+            <text x={subX + 8} y={topY + (midY - topY) / 2 + 3} textAnchor="start" fontSize="8">{glassHmm}</text>
+            <text x={subX + 8} y={midY + pHscaled / 2 + 3} textAnchor="start" fontSize="8">{pHmm}</text>
           </g>
         );
       })()}
