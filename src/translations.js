@@ -83,7 +83,9 @@ export const OPENING_LABEL = {
     leftOpen: "Lijevo (samo otv)",
     rightOpen: "Desno (samo otv)",
     bottomHung: "Donja kip",
-    topHung: "Gornja kip (padajući)"
+    topHung: "Gornja kip (padajući)",
+    leftDoor: "Otvaranje u lijevo",
+    rightDoor: "Otvaranje u desno"
   },
   de: {
     fixed: "Fest",
@@ -96,6 +98,8 @@ export const OPENING_LABEL = {
     leftOpen: "Links (nur Drehen)",
     rightOpen: "Rechts (nur Drehen)",
     bottomHung: "Klappöffnung unten",
-    topHung: "Klappöffnung oben"
+    topHung: "Klappöffnung oben",
+    leftDoor: "Öffnung nach links",
+    rightDoor: "Öffnung nach rechts"
   }
 };
