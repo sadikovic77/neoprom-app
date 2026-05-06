@@ -1,10 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Copy, Trash2, ChevronDown, ChevronUp, FileText } from 'lucide-react';
 import { T } from '../translations';
 import { ELEMENT_TYPES, newPosition } from '../elementTypes';
 import { getElementName } from '../utils/format';
 import { saveTemplate } from '../utils/templates';
 import WindowDrawing from './WindowDrawing';
+
+function MmInput({ value, min, max, onChange, className, style }) {
+  const [local, setLocal] = useState(String(value));
+  useEffect(() => { setLocal(String(value)); }, [value]);
+  const commit = () => {
+    const n = parseInt(local, 10);
+    if (!isNaN(n)) onChange(Math.max(min, Math.min(max, n)));
+    else setLocal(String(value));
+  };
+  return (
+    <input
+      type="number" value={local}
+      onChange={e => setLocal(e.target.value)}
+      onBlur={commit}
+      onKeyDown={e => e.key === 'Enter' && commit()}
+      min={min} max={max}
+      className={className} style={style}
+    />
+  );
+}
 
 export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, onMoveUp, onMoveDown, expanded, onToggle, index, lang }) {
   const update = (field, val) => onChange({ ...pos, [field]: val });
@@ -148,7 +168,7 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
                 <div className="flex items-center gap-2">
                   <input type="range" min="0.2" max="0.8" step={1 / pos.width}
                     value={ratio} onChange={e => update('divisionRatio', +e.target.value)} className="flex-1" />
-                  <input type="number" value={w1} onChange={e => setMm(+e.target.value)}
+                  <MmInput value={w1} onChange={setMm}
                     min={Math.round(pos.width * 0.2)} max={Math.round(pos.width * 0.8)}
                     className="w-20 px-2 py-1 border text-sm text-right shrink-0"
                     style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
@@ -170,9 +190,18 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
               const sp = divs[1] / ((divs[1] + divs[2]) || 1);
               update('divisions', [d0, sp * rem, (1 - sp) * rem]);
             };
+            const setDiv0Mm = (mm) => {
+              const clamped = Math.max(Math.round(pos.width * 0.1), Math.min(Math.round(pos.width * 0.8), mm));
+              setDiv0(clamped / pos.width);
+            };
             const setDiv1Split = (val) => {
               const rem = 1 - divs[0];
               update('divisions', [divs[0], +val * rem, (1 - +val) * rem]);
+            };
+            const setDiv1Mm = (mm) => {
+              const rem = pos.width - w1;
+              const clamped = Math.max(Math.round(rem * 0.1), Math.min(Math.round(rem * 0.9), mm));
+              setDiv1Split(clamped / rem);
             };
             return (
               <div className="space-y-2">
@@ -180,15 +209,27 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
                   <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">
                     Prva podjela: {w1} / {w2 + w3} mm
                   </label>
-                  <input type="range" min="0.1" max="0.8" step="0.01"
-                    value={divs[0]} onChange={e => setDiv0(e.target.value)} className="w-full" />
+                  <div className="flex items-center gap-2">
+                    <input type="range" min="0.1" max="0.8" step={1 / pos.width}
+                      value={divs[0]} onChange={e => setDiv0(e.target.value)} className="flex-1" />
+                    <MmInput value={w1} onChange={setDiv0Mm}
+                      min={Math.round(pos.width * 0.1)} max={Math.round(pos.width * 0.8)}
+                      className="w-20 px-2 py-1 border text-sm text-right shrink-0"
+                      style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">
                     Druga podjela: {w2} / {w3} mm
                   </label>
-                  <input type="range" min="0.1" max="0.9" step="0.01"
-                    value={split} onChange={e => setDiv1Split(e.target.value)} className="w-full" />
+                  <div className="flex items-center gap-2">
+                    <input type="range" min="0.1" max="0.9" step={1 / (pos.width - w1 || 1)}
+                      value={split} onChange={e => setDiv1Split(e.target.value)} className="flex-1" />
+                    <MmInput value={w2} onChange={setDiv1Mm}
+                      min={Math.round((pos.width - w1) * 0.1)} max={Math.round((pos.width - w1) * 0.9)}
+                      className="w-20 px-2 py-1 border text-sm text-right shrink-0"
+                      style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                  </div>
                 </div>
                 <div className="text-[10px] text-stone-400" style={{ fontFamily: 'Geist Mono, ui-monospace, monospace' }}>
                   Š1 {w1} / Š2 {w2} / Š3 {w3} mm
