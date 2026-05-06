@@ -403,11 +403,12 @@ export default function WindowDrawing({ pos, size = 360, showDims = true }) {
       })()}
 
       {/* sub-kota za roletnu */}
-      {pos.hasShutter && shutterH > 0 && (
+      {anyShutter && shutterH > 0 && (
         <g stroke="#1a1a1a" strokeWidth="0.3" fill="#1a1a1a">
-          <line x1={x0 - dimOffsetX + 8} y1={y0}    x2={x0 - dimOffsetX + 14} y2={y0} />
-          <line x1={x0 - dimOffsetX + 8} y1={winY0} x2={x0 - dimOffsetX + 14} y2={winY0} />
-          <text x={x0 - dimOffsetX + 6} y={y0 + shutterH / 2 + 3} textAnchor="end" fontSize="8">{shutterBoxH}</text>
+          <line x1={x0 + w + 2} y1={y0}    x2={x0 + w + 10} y2={y0} />
+          <line x1={x0 + w + 2} y1={winY0} x2={x0 + w + 10} y2={winY0} />
+          <line x1={x0 + w + 6} y1={y0}    x2={x0 + w + 6}  y2={winY0} />
+          <text x={x0 + w + 12} y={y0 + shutterH / 2 + 3} textAnchor="start" fontSize="8">{shutterBoxH}</text>
         </g>
       )}
       </>}
