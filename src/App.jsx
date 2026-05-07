@@ -119,6 +119,17 @@ export default function App() {
     }
     return updated;
   });
+
+  const translateDoc = (d, newLang) => {
+    const oldT = T[newLang === 'de' ? 'bs' : 'de'];
+    const newT = T[newLang];
+    const arrEq = (a, b) => Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((v, i) => v === b[i]);
+    const updated = { ...d, positions: translatePositions(d.positions) };
+    if (arrEq(d.docNotes, oldT.notes) || d.docNotes === null) updated.docNotes = null;
+    if (arrEq(d.docPayTerms, [oldT.pay70, oldT.pay30]) || d.docPayTerms === null) updated.docPayTerms = null;
+    if (d.paymentMethodText === oldT.cash) updated.paymentMethodText = newT.cash;
+    return updated;
+  };
   const [showPrices, setShowPrices] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
@@ -247,7 +258,7 @@ export default function App() {
             <div className="flex items-center gap-1 text-xs">
               <span className="text-stone-500 mr-1">Jezik:</span>
               {['bs', 'de'].map(l => (
-                <button key={l} onClick={() => { if (l !== lang) { setLang(l); setDoc({ ...doc, positions: translatePositions(doc.positions) }); } }} className="px-2 py-1 uppercase tracking-wider" style={{ background: lang === l ? '#1f3a5f' : 'transparent', color: lang === l ? 'white' : '#6b6b6b' }}>{l}</button>
+                <button key={l} onClick={() => { if (l !== lang) { setLang(l); setDoc(translateDoc(doc, l)); } }} className="px-2 py-1 uppercase tracking-wider" style={{ background: lang === l ? '#1f3a5f' : 'transparent', color: lang === l ? 'white' : '#6b6b6b' }}>{l}</button>
               ))}
             </div>
 
@@ -330,7 +341,7 @@ export default function App() {
                       onChange={name => setDoc({ ...doc, customer: { ...doc.customer, name }, customerId: null })}
                       onSelect={c => {
                         setDoc({ ...doc, customer: { name: c.name, address: c.address }, customerId: c.id });
-                        if (c.language && c.language !== lang) { setLang(c.language); setDoc({ ...doc, positions: translatePositions(doc.positions) }); } else if (c.language) setLang(c.language);
+                        if (c.language && c.language !== lang) { setLang(c.language); setDoc(translateDoc(doc, c.language)); } else if (c.language) setLang(c.language);
                         if (c.currency) setCurrency(c.currency);
                       }}
                     />
