@@ -8,6 +8,7 @@ import PositionEditor from './components/PositionEditor';
 import PdfPreview from './components/PdfPreview';
 import QuotesList from './components/QuotesList';
 import CustomerAutocomplete from './components/CustomerAutocomplete';
+import NotesEditor from './components/NotesEditor';
 
 const QUOTES_KEY = 'quotes';
 const CURRENT_ID_KEY = 'current-quote-id';
@@ -34,6 +35,13 @@ const createEmptyDoc = (quotes = []) => ({
   netOverride: 0,
   vatRate: 17,
   vatEnabled: true,
+  customNotes: '',
+  docNotes: null,
+  docPayTerms: null,
+  showMontage: true,
+  showTransport: true,
+  deliveryText: null,
+  paymentMethodText: null,
 });
 
 const loadStorage = () => {
@@ -451,6 +459,9 @@ export default function App() {
                   </div>
                 )}
               </div>
+
+              {/* Napomene */}
+              <NotesEditor doc={doc} setDoc={setDoc} lang={lang} />
             </div>
           )}
 

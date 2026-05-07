@@ -146,14 +146,17 @@ export default function PdfPreview({ doc, lang, currency, showPrices }) {
       <div className="px-12 py-8 print-page">
         <div className="text-sm font-semibold mb-3 tracking-wider">{t.notesTitle}:</div>
         <ul className="space-y-1 text-[10px] mb-6">
-          {t.notes.map((n, i) => <li key={i}>· {n}</li>)}
+          {(doc.docNotes ?? t.notes).map((n, i) => n.trim() && <li key={i}>· {n}</li>)}
         </ul>
 
-        <div className="text-sm font-semibold mb-2">{t.paymentT}:</div>
-        <ul className="space-y-1 text-[10px] mb-6">
-          <li>· {t.pay70}</li>
-          <li>· {t.pay30}</li>
-        </ul>
+        {(() => { const terms = doc.docPayTerms ?? [t.pay70, t.pay30]; return terms.length > 0 && (
+          <>
+            <div className="text-sm font-semibold mb-2">{t.paymentT}:</div>
+            <ul className="space-y-1 text-[10px] mb-6">
+              {terms.map((n, i) => n.trim() && <li key={i}>· {n}</li>)}
+            </ul>
+          </>
+        ); })()}
 
         <div className="text-[10px] text-stone-600 mb-8 italic">{t.closing}</div>
 
@@ -161,10 +164,10 @@ export default function PdfPreview({ doc, lang, currency, showPrices }) {
         <div className="border-t-2 pt-4" style={{ borderColor: '#1a1a1a' }}>
           <div className="flex justify-between items-end">
             <div className="text-[10px] space-y-1">
-              <div><span className="font-semibold">{t.montage}:</span> {t.yes}</div>
-              <div><span className="font-semibold">{t.transport}:</span> {t.yes}</div>
-              <div><span className="font-semibold">{t.deliveryT}:</span> Franco Bugojno</div>
-              <div><span className="font-semibold">{t.payMethod}:</span> {t.cash}</div>
+              {(doc.showMontage ?? true) && <div><span className="font-semibold">{t.montage}:</span> {t.yes}</div>}
+              {(doc.showTransport ?? true) && <div><span className="font-semibold">{t.transport}:</span> {t.yes}</div>}
+              <div><span className="font-semibold">{t.deliveryT}:</span> {doc.deliveryText ?? 'Franco Bugojno'}</div>
+              <div><span className="font-semibold">{t.payMethod}:</span> {doc.paymentMethodText ?? t.cash}</div>
             </div>
             <div className="text-right">
               <table style={{ fontFamily: 'Geist Mono, ui-monospace, monospace' }} className="text-[11px]">
