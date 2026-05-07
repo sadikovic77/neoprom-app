@@ -87,15 +87,17 @@ export default function PdfPreview({ doc, lang, currency, showPrices }) {
               </div>
             </div>
             <div className="flex-1 min-w-0 text-[10px] leading-relaxed">
-              <div><span className="font-semibold">{t.system}:</span> {p.systemName}</div>
-              <div><span className="font-semibold">{t.element}:</span> {getElementName(p.type, lang)}</div>
-              <div><span className="font-semibold">{t.dims}:</span> {t.width} {p.width} mm × {t.height} {p.height} mm</div>
-              <div><span className="font-semibold">{t.fitting}:</span> {p.fitting}</div>
-              <div><span className="font-semibold">{t.color}:</span> {p.color}</div>
-              <div><span className="font-semibold">{t.opening}:</span> {opLabel[p.opening] || p.opening}</div>
-              <div><span className="font-semibold">{t.glass}:</span> {p.glass}</div>
-              <div><span className="font-semibold">{t.frameProf}:</span> {p.frameProfile}, {t.frameDepth} {p.frameDepth} mm</div>
-              <div><span className="font-semibold">{t.sashProf}:</span> {p.sashProfile}, {t.sashDepth} {p.sashDepth} mm</div>
+              {(() => { const df = doc.descFields ?? {}; const g = k => df[k] ?? true; return (<>
+              {g('system') && <div><span className="font-semibold">{t.system}:</span> {p.systemName}</div>}
+              {g('element') && <div><span className="font-semibold">{t.element}:</span> {getElementName(p.type, lang)}</div>}
+              {g('dims') && <div><span className="font-semibold">{t.dims}:</span> {t.width} {p.width} mm × {t.height} {p.height} mm</div>}
+              {g('fitting') && <div><span className="font-semibold">{t.fitting}:</span> {p.fitting}</div>}
+              {g('color') && <div><span className="font-semibold">{t.color}:</span> {p.color}</div>}
+              {g('opening') && <div><span className="font-semibold">{t.opening}:</span> {opLabel[p.opening] || p.opening}</div>}
+              {g('glass') && <div><span className="font-semibold">{t.glass}:</span> {p.glass}</div>}
+              {g('frameProf') && <div><span className="font-semibold">{t.frameProf}:</span> {p.frameProfile}, {t.frameDepth} {p.frameDepth} mm</div>}
+              {g('sashProf') && <div><span className="font-semibold">{t.sashProf}:</span> {p.sashProfile}, {t.sashDepth} {p.sashDepth} mm</div>}
+              </>); })()}
               {(() => {
                 const autoLines = [];
                 if (p.hasMosquitoNet && !p.accessories.some(a => a.toLowerCase().includes('mreža') || a.toLowerCase().includes('insekt'))) {
@@ -117,7 +119,8 @@ export default function PdfPreview({ doc, lang, currency, showPrices }) {
                   autoLines.push(`${t.shutterControlLabel}: ${ctrl}`);
                 }
                 const all = [...p.accessories, ...autoLines];
-                return all.length > 0 ? (
+                const showAcc = (doc.descFields?.accessories ?? true);
+                return showAcc && all.length > 0 ? (
                   <div className="mt-1.5">
                     <div className="font-semibold">{t.accessories}:</div>
                     <ul className="ml-3">{all.map((a, idx) => <li key={idx}>· {a}</li>)}</ul>

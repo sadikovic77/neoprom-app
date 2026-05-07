@@ -37,6 +37,7 @@ const createEmptyDoc = (quotes = []) => ({
   vatEnabled: true,
   customNotes: '',
   advanceRate: 70,
+  descFields: null,
   docNotes: null,
   docPayTerms: null,
   showMontage: true,
@@ -487,6 +488,32 @@ export default function App() {
                     className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
                 </div>
               </details>
+
+              {/* Polja opisa */}
+              {(() => {
+                const df = doc.descFields ?? {};
+                const g = (k) => df[k] ?? true;
+                const s = (k, v) => setDoc({ ...doc, descFields: { ...df, [k]: v } });
+                const fields = [
+                  ['system', 'Sistem'], ['element', 'Tip elementa'], ['dims', 'Dimenzije'],
+                  ['fitting', 'Okov'], ['color', 'Boja'], ['opening', 'Otvaranje'],
+                  ['glass', 'Staklo'], ['frameProf', 'Profil rama'], ['sashProf', 'Profil krila'],
+                  ['accessories', 'Dodaci / pribor'],
+                ];
+                return (
+                  <details className="bg-white border" style={{ borderColor: '#e5e5e0' }}>
+                    <summary className="px-4 py-3 cursor-pointer text-[10px] uppercase tracking-wider text-stone-500 select-none">Polja opisa u PDF-u</summary>
+                    <div className="px-4 pb-4 grid grid-cols-2 gap-x-4 gap-y-1.5 mt-1">
+                      {fields.map(([k, label]) => (
+                        <label key={k} className="flex items-center gap-1.5 text-xs cursor-pointer">
+                          <input type="checkbox" checked={g(k)} onChange={e => s(k, e.target.checked)} />
+                          {label}
+                        </label>
+                      ))}
+                    </div>
+                  </details>
+                );
+              })()}
 
               {/* Napomene */}
               <NotesEditor doc={doc} setDoc={setDoc} lang={lang} />
