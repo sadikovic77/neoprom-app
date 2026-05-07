@@ -4,12 +4,68 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --app-bg: #fafaf7;
+  --panel-bg: #ffffff;
+  --panel-bg-alt: #e8e8e4;
+  --border: #e5e5e0;
+  --input-border: #d4d4cf;
+  --text: #1a1a1a;
+  --text-muted: #6b6b6b;
+  --text-subtle: #a0a0a0;
+  --navy: #1f3a5f;
+  --accent-bg: #eff6ff;
+}
+
+.dark {
+  --app-bg: #18181b;
+  --panel-bg: #27272a;
+  --panel-bg-alt: #141417;
+  --border: #3f3f46;
+  --input-border: #52525b;
+  --text: #f4f4f5;
+  --text-muted: #a1a1aa;
+  --text-subtle: #71717a;
+  --navy: #3b82f6;
+  --accent-bg: #1e3a5f;
+}
+
 body {
   margin: 0;
   font-family: 'Geist', system-ui, sans-serif;
-  background: #fafaf7;
-  color: #1a1a1a;
+  background: var(--app-bg);
+  color: var(--text);
 }
+
+/* Hover in dark mode */
+.dark .hover\:bg-stone-50:hover {
+  background-color: #3f3f46 !important;
+}
+
+/* Panel backgrounds via CSS variables */
+.dark details,
+.dark .border.p-4,
+.dark .border.p-5 {
+  background-color: var(--panel-bg);
+}
+.dark .absolute.border.shadow-lg {
+  background-color: var(--panel-bg);
+}
+
+.dark .text-stone-500 { color: var(--text-muted) !important; }
+.dark .text-stone-600 { color: var(--text-muted) !important; }
+.dark .text-stone-400 { color: var(--text-subtle) !important; }
+.dark .text-stone-300 { color: var(--text-subtle) !important; }
+.dark .bg-stone-50 { background-color: #27272a !important; }
+.dark .bg-stone-200 { background-color: #1f1f22 !important; }
+.dark input, .dark textarea, .dark select {
+  background-color: #3f3f46;
+  color: var(--text);
+}
+.dark input::placeholder, .dark textarea::placeholder {
+  color: var(--text-subtle);
+}
+.dark summary { color: var(--text-muted); }
 
 @media print {
   body * { visibility: hidden; }

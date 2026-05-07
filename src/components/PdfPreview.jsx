@@ -168,10 +168,14 @@ export default function PdfPreview({ doc, lang, currency, showPrices }) {
         <div className="border-t-2 pt-4" style={{ borderColor: '#1a1a1a' }}>
           <div className="flex justify-between items-end">
             <div className="text-[10px] space-y-1">
-              {(doc.showMontage ?? true) && <div><span className="font-semibold">{t.montage}:</span> {t.yes}</div>}
-              {(doc.showTransport ?? true) && <div><span className="font-semibold">{t.transport}:</span> {t.yes}</div>}
-              <div><span className="font-semibold">{t.deliveryT}:</span> {doc.deliveryText ?? 'Franco Bugojno'}</div>
-              <div><span className="font-semibold">{t.payMethod}:</span> {doc.paymentMethodText ?? t.cash}</div>
+              {(() => { const mv = doc.montageValue ?? (doc.showMontage === false ? 'hidden' : 'da'); return mv !== 'hidden' && <div><span className="font-semibold">{t.montage}:</span> {mv === 'da' ? t.yes : t.no}</div>; })()}
+              {(() => { const tv = doc.transportValue ?? (doc.showTransport === false ? 'hidden' : 'da'); return tv !== 'hidden' && <div><span className="font-semibold">{t.transport}:</span> {tv === 'da' ? t.yes : t.no}</div>; })()}
+              {(doc.showDelivery ?? true) && <div><span className="font-semibold">{t.deliveryT}:</span> {doc.deliveryText ?? 'Franco Bugojno'}</div>}
+              {(() => {
+                const pm = doc.paymentMethod ?? (doc.showPaymentMethod === false ? 'hidden' : 'cash');
+                const pmLabel = { cash: t.cash, transfer: t.transfer, card: t.card }[pm];
+                return pm !== 'hidden' && pmLabel && <div><span className="font-semibold">{t.payMethod}:</span> {pmLabel}</div>;
+              })()}
             </div>
             <div className="text-right">
               {(() => {

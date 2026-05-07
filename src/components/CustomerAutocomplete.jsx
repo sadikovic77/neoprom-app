@@ -26,11 +26,11 @@ export default function CustomerAutocomplete({ value, onChange, onSelect }) {
         onChange={e => { onChange(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
         className="w-full px-2 py-1.5 border text-sm"
-        style={{ borderColor: '#d4d4cf' }}
+        style={{ borderColor: 'var(--input-border)' }}
       />
       {suggestions.length > 0 && (
-        <div className="absolute z-30 w-full bg-white border shadow-md mt-0.5"
-          style={{ borderColor: '#d4d4cf' }}>
+        <div className="absolute z-30 w-full border shadow-md mt-0.5"
+          style={{ borderColor: 'var(--input-border)' }}>
           {suggestions.map(c => (
             <div key={c.id}
               onMouseDown={e => { e.preventDefault(); onSelect(c); setOpen(false); }}

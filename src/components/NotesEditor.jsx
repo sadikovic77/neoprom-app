@@ -29,7 +29,7 @@ export default function NotesEditor({ doc, setDoc, lang }) {
   };
 
   return (
-    <details className="bg-white border" style={{ borderColor: '#e5e5e0' }}>
+    <details className="border" style={{ borderColor: 'var(--border)' }}>
       <summary className="px-4 py-3 cursor-pointer text-[10px] uppercase tracking-wider text-stone-500 select-none">
         Napomene i uslovi
       </summary>
@@ -48,7 +48,7 @@ export default function NotesEditor({ doc, setDoc, lang }) {
                   <button onClick={() => moveNote(i, 1)} disabled={i === notes.length - 1} className="text-stone-300 hover:text-stone-600 disabled:opacity-20 leading-none">▼</button>
                 </div>
                 <textarea value={n} onChange={e => updateNote(i, e.target.value)} rows={2}
-                  className="flex-1 px-2 py-1 border text-xs resize-y" style={{ borderColor: '#d4d4cf' }} />
+                  className="flex-1 px-2 py-1 border text-xs resize-y" style={{ borderColor: 'var(--input-border)' }} />
                 <button onClick={() => removeNote(i)} className="text-stone-300 hover:text-red-500 mt-1 shrink-0">✕</button>
               </div>
             ))}
@@ -69,7 +69,7 @@ export default function NotesEditor({ doc, setDoc, lang }) {
                   <button onClick={() => movePayTerm(i, 1)} disabled={i === payTerms.length - 1} className="text-stone-300 hover:text-stone-600 disabled:opacity-20 leading-none">▼</button>
                 </div>
                 <input value={n} onChange={e => updatePayTerm(i, e.target.value)}
-                  className="flex-1 px-2 py-1 border text-xs" style={{ borderColor: '#d4d4cf' }} />
+                  className="flex-1 px-2 py-1 border text-xs" style={{ borderColor: 'var(--input-border)' }} />
                 <button onClick={() => removePayTerm(i)} className="text-stone-300 hover:text-red-500 shrink-0">✕</button>
               </div>
             ))}
@@ -77,34 +77,59 @@ export default function NotesEditor({ doc, setDoc, lang }) {
         </div>
 
         {/* Montaža / Transport */}
-        <div className="flex gap-4">
-          <label className="flex items-center gap-1.5 text-xs cursor-pointer">
-            <input type="checkbox" checked={doc.showMontage ?? true}
-              onChange={e => setDoc({ ...doc, showMontage: e.target.checked })} />
-            Montaža
-          </label>
-          <label className="flex items-center gap-1.5 text-xs cursor-pointer">
-            <input type="checkbox" checked={doc.showTransport ?? true}
-              onChange={e => setDoc({ ...doc, showTransport: e.target.checked })} />
-            Transport
-          </label>
+        {[['montageValue', 'showMontage', 'Montaža'], ['transportValue', 'showTransport', 'Transport']].map(([valKey, showKey, label]) => {
+          const val = doc[valKey] ?? (doc[showKey] === false ? 'hidden' : 'da');
+          return (
+            <div key={valKey} className="flex items-center gap-2 text-xs">
+              <span className="w-16 shrink-0" style={{ color: 'var(--text-muted)' }}>{label}:</span>
+              {['da', 'ne', 'hidden'].map(opt => (
+                <button key={opt} onClick={() => setDoc({ ...doc, [valKey]: opt })}
+                  className="px-2 py-0.5 text-[10px] border"
+                  style={{
+                    borderColor: 'var(--input-border)',
+                    background: val === opt ? 'var(--navy)' : 'transparent',
+                    color: val === opt ? 'white' : 'var(--text-muted)',
+                  }}>
+                  {opt === 'hidden' ? '—' : opt === 'da' ? 'Da' : 'Ne'}
+                </button>
+              ))}
+            </div>
+          );
+        })}
+
+        {/* Način plaćanja */}
+        <div className="flex items-center gap-2 text-xs">
+          <span className="w-16 shrink-0" style={{ color: 'var(--text-muted)' }}>Plaćanje:</span>
+          {[['cash', 'Gotovina'], ['transfer', 'Virman'], ['card', 'Kartica'], ['hidden', '—']].map(([opt, lbl]) => {
+            const val = doc.paymentMethod ?? (doc.showPaymentMethod === false ? 'hidden' : 'cash');
+            return (
+              <button key={opt} onClick={() => setDoc({ ...doc, paymentMethod: opt })}
+                className="px-2 py-0.5 text-[10px] border"
+                style={{
+                  borderColor: 'var(--input-border)',
+                  background: val === opt ? 'var(--navy)' : 'transparent',
+                  color: val === opt ? 'white' : 'var(--text-muted)',
+                }}>
+                {lbl}
+              </button>
+            );
+          })}
         </div>
 
         {/* Uslovi isporuke */}
-        <div>
-          <label className="block text-[10px] uppercase tracking-wider text-stone-500 mb-1">Uslovi isporuke</label>
+        <div className="flex items-center gap-2 text-xs">
+          <span className="w-16 shrink-0" style={{ color: 'var(--text-muted)' }}>Isporuka:</span>
+          <label className="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" checked={doc.showDelivery ?? true}
+              onChange={e => setDoc({ ...doc, showDelivery: e.target.checked })} />
+            <span style={{ color: 'var(--text-muted)' }}>Prikaži</span>
+          </label>
+        </div>
+        {(doc.showDelivery ?? true) && (
           <input value={doc.deliveryText ?? 'Franco Bugojno'}
             onChange={e => setDoc({ ...doc, deliveryText: e.target.value })}
-            className="w-full px-2 py-1 border text-xs" style={{ borderColor: '#d4d4cf' }} />
-        </div>
-
-        {/* Način plaćanja */}
-        <div>
-          <label className="block text-[10px] uppercase tracking-wider text-stone-500 mb-1">Način plaćanja</label>
-          <input value={doc.paymentMethodText ?? t.cash}
-            onChange={e => setDoc({ ...doc, paymentMethodText: e.target.value })}
-            className="w-full px-2 py-1 border text-xs" style={{ borderColor: '#d4d4cf' }} />
-        </div>
+            className="w-full px-2 py-1 border text-xs" style={{ borderColor: 'var(--input-border)' }} />
+        )}
       </div>
     </details>
   );

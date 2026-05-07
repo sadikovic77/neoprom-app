@@ -90,6 +90,12 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [quotes, currentId]);
 
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('dark-mode') === 'true');
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+    localStorage.setItem('dark-mode', darkMode);
+  }, [darkMode]);
+
   const [lang, setLang] = useState('bs');
   const [currency, setCurrency] = useState('KM');
 
@@ -230,61 +236,66 @@ export default function App() {
           .avoid-break { page-break-inside: avoid; }
           @page { size: A4; margin: 0; }
         }
-        body { background: #f5f5f0; }
+        body { background: var(--app-bg); }
       `}</style>
 
-      <div className="h-screen flex flex-col" style={{ background: '#fafaf7', fontFamily: 'Geist, system-ui, sans-serif', color: '#1a1a1a' }}>
+      <div className="h-screen flex flex-col" style={{ background: 'var(--app-bg)', fontFamily: 'Geist, system-ui, sans-serif', color: 'var(--text)' }}>
         {/* TOP BAR */}
-        <div className="border-b shrink-0 z-10" style={{ background: '#fafaf7', borderColor: '#e5e5e0', printColorAdjust: 'exact' }}>
+        <div className="border-b shrink-0 z-10" style={{ background: 'var(--app-bg)', borderColor: 'var(--border)', printColorAdjust: 'exact' }}>
           <div className="px-6 py-3 flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <img src="/neoprom-icon.svg" alt="Neoprom" style={{ height: '28px', display: 'block' }} />
-              <div className="font-medium tracking-tight">Generator ponuda <span className="text-stone-400 text-xs ml-1">v0.1</span></div>
+              <div className="font-medium tracking-tight" style={{ color: 'var(--text)' }}>Generator ponuda <span className="text-xs ml-1" style={{ color: 'var(--text-subtle)' }}>v0.1</span></div>
             </div>
             <div className="flex items-center gap-1 ml-2">
               {[['quotes', 'Ponude'], ['customers', 'Kupci']].map(([v, label]) => (
                 <button key={v} onClick={() => setCurrentView(v)}
                   className="px-3 py-1 text-xs font-medium"
                   style={{
-                    color: currentView === v ? '#1f3a5f' : '#6b6b6b',
-                    borderBottom: `2px solid ${currentView === v ? '#1f3a5f' : 'transparent'}`
+                    color: currentView === v ? 'var(--navy)' : 'var(--text-muted)',
+                    borderBottom: `2px solid ${currentView === v ? 'var(--navy)' : 'transparent'}`
                   }}>
                   {label}
                 </button>
               ))}
             </div>
-            <div className="h-5 w-px bg-stone-300 mx-1"></div>
+            <div className="h-5 w-px mx-1" style={{ background: 'var(--border)' }}></div>
 
             {/* Jezik */}
             <div className="flex items-center gap-1 text-xs">
-              <span className="text-stone-500 mr-1">Jezik:</span>
+              <span className="mr-1" style={{ color: 'var(--text-muted)' }}>Jezik:</span>
               {['bs', 'de'].map(l => (
-                <button key={l} onClick={() => { if (l !== lang) { setLang(l); setDoc(translateDoc(doc, l)); } }} className="px-2 py-1 uppercase tracking-wider" style={{ background: lang === l ? '#1f3a5f' : 'transparent', color: lang === l ? 'white' : '#6b6b6b' }}>{l}</button>
+                <button key={l} onClick={() => { if (l !== lang) { setLang(l); setDoc(translateDoc(doc, l)); } }} className="px-2 py-1 uppercase tracking-wider" style={{ background: lang === l ? 'var(--navy)' : 'transparent', color: lang === l ? 'white' : 'var(--text-muted)' }}>{l}</button>
               ))}
             </div>
 
             {/* Valuta */}
             <div className="flex items-center gap-1 text-xs">
-              <span className="text-stone-500 mr-1">Valuta:</span>
+              <span className="mr-1" style={{ color: 'var(--text-muted)' }}>Valuta:</span>
               {['KM', 'EUR'].map(c => (
-                <button key={c} onClick={() => setCurrency(c)} className="px-2 py-1" style={{ background: currency === c ? '#1f3a5f' : 'transparent', color: currency === c ? 'white' : '#6b6b6b' }}>{c}</button>
+                <button key={c} onClick={() => setCurrency(c)} className="px-2 py-1" style={{ background: currency === c ? 'var(--navy)' : 'transparent', color: currency === c ? 'white' : 'var(--text-muted)' }}>{c}</button>
               ))}
             </div>
 
             {/* Cijene */}
-            <button onClick={() => setShowPrices(!showPrices)} className="flex items-center gap-1.5 text-xs px-2 py-1 border" style={{ borderColor: '#d4d4cf', color: showPrices ? '#1f3a5f' : '#6b6b6b' }}>
+            <button onClick={() => setShowPrices(!showPrices)} className="flex items-center gap-1.5 text-xs px-2 py-1 border" style={{ borderColor: 'var(--input-border)', color: showPrices ? 'var(--navy)' : 'var(--text-muted)' }}>
               {showPrices ? <Eye size={13} /> : <EyeOff size={13} />}
               Cijene po poziciji
+            </button>
+
+            {/* Dark mode */}
+            <button onClick={() => setDarkMode(!darkMode)} className="text-xs px-2 py-1 border" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
+              {darkMode ? '☀ Light' : '☾ Dark'}
             </button>
 
             <div className="ml-auto flex items-center gap-2">
               <span style={{ fontSize: '11px', color: saveStatus === 'saved' ? '#16a34a' : '#ca8a04' }}>
                 {saveStatus === 'saved' ? '✓ Spremljeno' : '⏳ Spremam...'}
               </span>
-              <button onClick={() => setView(view === 'split' ? 'preview' : 'split')} className="text-xs px-3 py-1.5 border" style={{ borderColor: '#d4d4cf' }}>
+              <button onClick={() => setView(view === 'split' ? 'preview' : 'split')} className="text-xs px-3 py-1.5 border" style={{ borderColor: 'var(--input-border)', color: 'var(--text)' }}>
                 {view === 'split' ? 'Samo preview' : 'Editor + preview'}
               </button>
-              <button onClick={() => window.print()} className="flex items-center gap-1.5 text-xs px-3 py-1.5 text-white" style={{ background: '#1f3a5f' }}>
+              <button onClick={() => window.print()} className="flex items-center gap-1.5 text-xs px-3 py-1.5 text-white" style={{ background: 'var(--navy)' }}>
                 <Printer size={13} /> Štampaj / PDF
               </button>
             </div>
@@ -311,19 +322,19 @@ export default function App() {
 
           {/* EDITOR PANEL */}
           {view === 'split' && (
-            <div className="space-y-4 p-6 border-r overflow-y-auto h-full" style={{ borderColor: '#e5e5e0' }}>
+            <div className="space-y-4 p-6 border-r overflow-y-auto h-full" style={{ borderColor: 'var(--border)', background: 'var(--app-bg)' }}>
               {/* Header info */}
-              <div className="bg-white border p-4" style={{ borderColor: '#e5e5e0' }}>
+              <div className="border p-4" style={{ borderColor: 'var(--border)' }}>
                 <div className="text-xs uppercase tracking-wider text-stone-500 mb-3">Podaci o ponudi</div>
                 <div className="space-y-2">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block text-[10px] uppercase tracking-wider text-stone-500 mb-1">Broj ponude</label>
-                      <input value={doc.number} onChange={e => setDoc({ ...doc, number: e.target.value })} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                      <input value={doc.number} onChange={e => setDoc({ ...doc, number: e.target.value })} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
                     </div>
                     <div>
                       <label className="block text-[10px] uppercase tracking-wider text-stone-500 mb-1">Datum</label>
-                      <input value={doc.date} onChange={e => setDoc({ ...doc, date: e.target.value })} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                      <input value={doc.date} onChange={e => setDoc({ ...doc, date: e.target.value })} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
                     </div>
                   </div>
                   <div>
@@ -349,7 +360,7 @@ export default function App() {
                   </div>
                   <div>
                     <label className="block text-[10px] uppercase tracking-wider text-stone-500 mb-1">Adresa</label>
-                    <textarea value={doc.customer.address} onChange={e => setDoc({ ...doc, customer: { ...doc.customer, address: e.target.value } })} rows="2" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
+                    <textarea value={doc.customer.address} onChange={e => setDoc({ ...doc, customer: { ...doc.customer, address: e.target.value } })} rows="2" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }} />
                     {doc.customer.name && !doc.customerId && (
                       <div className="mt-1.5 flex items-center gap-2">
                         <button onClick={() => {
@@ -381,11 +392,11 @@ export default function App() {
                     {/* Iz template-a */}
                     <div className="relative">
                       <button onClick={() => { setTemplates(getTemplates()); setShowTemplateMenu(!showTemplateMenu); setConfirmDeleteTpl(null); }}
-                        className="text-xs px-2 py-1 border" style={{ borderColor: '#d4d4cf', color: '#6b6b6b' }}>
+                        className="text-xs px-2 py-1 border" style={{ borderColor: 'var(--input-border)', color: 'var(--text-muted)' }}>
                         Iz template-a
                       </button>
                       {showTemplateMenu && (
-                        <div className="absolute right-0 top-full mt-1 bg-white border shadow-lg z-20 w-56" style={{ borderColor: '#d4d4cf' }}>
+                        <div className="absolute right-0 top-full mt-1 border shadow-lg z-20 w-56" style={{ borderColor: 'var(--input-border)' }}>
                           {templates.length === 0 ? (
                             <div className="px-3 py-2 text-xs text-stone-400">Nema spremljenih template-a</div>
                           ) : (
@@ -419,7 +430,7 @@ export default function App() {
                         <Plus size={12} /> Dodaj
                       </button>
                       {showAddMenu && (
-                        <div className="absolute right-0 top-full mt-1 bg-white border shadow-lg z-20" style={{ borderColor: '#d4d4cf' }}>
+                        <div className="absolute right-0 top-full mt-1 border shadow-lg z-20" style={{ borderColor: 'var(--input-border)' }}>
                           {ELEMENT_TYPES.map(t => (
                             <button key={t.id} onClick={() => addPos(t.id)} className="block w-full text-left px-3 py-2 text-xs hover:bg-stone-50 whitespace-nowrap">{t.name}</button>
                           ))}
@@ -449,15 +460,15 @@ export default function App() {
               </div>
 
               {/* Override neta */}
-              <details className="bg-white border" style={{ borderColor: '#e5e5e0' }}>
+              <details className="border" style={{ borderColor: 'var(--border)' }}>
                 <summary className="px-4 py-3 cursor-pointer text-[10px] uppercase tracking-wider text-stone-500 select-none">Neto override</summary>
                 <div className="px-4 pb-4">
-                  <input type="number" value={doc.netOverride || ''} onChange={e => setDoc({ ...doc, netOverride: +e.target.value })} placeholder="Auto-zbroj iz pozicija" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                  <input type="number" value={doc.netOverride || ''} onChange={e => setDoc({ ...doc, netOverride: +e.target.value })} placeholder="Auto-zbroj iz pozicija" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
                 </div>
               </details>
 
               {/* PDV */}
-              <details className="bg-white border" style={{ borderColor: '#e5e5e0' }}>
+              <details className="border" style={{ borderColor: 'var(--border)' }}>
                 <summary className="px-4 py-3 cursor-pointer text-[10px] uppercase tracking-wider text-stone-500 select-none">PDV</summary>
                 <div className="px-4 pb-4 space-y-2">
                   <label className="flex items-center gap-2 text-xs cursor-pointer">
@@ -471,21 +482,21 @@ export default function App() {
                       <input type="number" value={doc.vatRate ?? 17}
                         onChange={e => setDoc({ ...doc, vatRate: +e.target.value })}
                         min="0" max="30" step="0.5"
-                        className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                        className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
                     </div>
                   )}
                 </div>
               </details>
 
               {/* Avans */}
-              <details className="bg-white border" style={{ borderColor: '#e5e5e0' }}>
+              <details className="border" style={{ borderColor: 'var(--border)' }}>
                 <summary className="px-4 py-3 cursor-pointer text-[10px] uppercase tracking-wider text-stone-500 select-none">Avans</summary>
                 <div className="px-4 pb-4">
                   <label className="block text-[10px] uppercase tracking-wider text-stone-500 mb-1">Avans (%)</label>
                   <input type="number" value={doc.advanceRate ?? 70}
                     onChange={e => setDoc({ ...doc, advanceRate: +e.target.value })}
                     min="0" max="100" step="5"
-                    className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                    className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
                 </div>
               </details>
 
@@ -501,7 +512,7 @@ export default function App() {
                   ['accessories', 'Dodaci / pribor'],
                 ];
                 return (
-                  <details className="bg-white border" style={{ borderColor: '#e5e5e0' }}>
+                  <details className="border" style={{ borderColor: 'var(--border)' }}>
                     <summary className="px-4 py-3 cursor-pointer text-[10px] uppercase tracking-wider text-stone-500 select-none">Polja opisa u PDF-u</summary>
                     <div className="px-4 pb-4 grid grid-cols-2 gap-x-4 gap-y-1.5 mt-1">
                       {fields.map(([k, label]) => (
@@ -521,14 +532,14 @@ export default function App() {
           )}
 
           {/* PREVIEW PANEL */}
-          <div className="bg-stone-200 p-4 lg:p-8 overflow-auto h-full">
-            <div className="mx-auto shadow-lg" style={{ width: '210mm', minHeight: '297mm', background: 'white' }}>
+          <div className="p-4 lg:p-8 overflow-auto h-full" style={{ background: 'var(--panel-bg-alt)' }}>
+            <div className="mx-auto shadow-lg" style={{ width: '210mm', minHeight: '297mm', background: 'white', color: '#1a1a1a' }}>
               <PdfPreview doc={doc} lang={lang} currency={currency} showPrices={showPrices} />
             </div>
           </div>
         </div>}
 
-        <div className="shrink-0 text-center text-[10px] text-stone-400 py-4 border-t" style={{ borderColor: '#e5e5e0' }}>
+        <div className="shrink-0 text-center text-[10px] text-stone-400 py-4 border-t" style={{ borderColor: 'var(--border)' }}>
           Demo · Neoprom Engineering · Generator ponuda v0.1
         </div>
       </div>

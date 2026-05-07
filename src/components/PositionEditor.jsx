@@ -39,32 +39,32 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
   const [tplName, setTplName] = useState('');
 
   return (
-    <div style={{ borderColor: '#e5e5e0' }} className="border bg-white">
+    <div style={{ borderColor: 'var(--border)', background: 'var(--panel-bg)' }} className="border">
       {/* Compact header */}
       <div className="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-stone-50" onClick={onToggle}>
         <div className="w-8 h-8 flex items-center justify-center text-sm font-medium" style={{ background: '#1f3a5f', color: 'white', fontFamily: 'Geist Mono, ui-monospace, monospace' }}>
           {index + 1}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium truncate" style={{ color: '#1a1a1a' }}>
+          <div className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>
             {getElementName(pos.type, lang)}
           </div>
-          <div className="text-xs text-stone-500" style={{ fontFamily: 'Geist Mono, ui-monospace, monospace' }}>
+          <div className="text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'Geist Mono, ui-monospace, monospace' }}>
             {pos.width} × {pos.height} mm · {pos.quantity} {t.pieces}
           </div>
         </div>
-        <div className="shrink-0 bg-stone-50 border" style={{ borderColor: '#e5e5e0', width: 112, height: 112 }}>
+        <div className="shrink-0 border" style={{ borderColor: 'var(--border)', width: 112, height: 112 }}>
           <WindowDrawing pos={pos} size={112} showDims={false} />
         </div>
         {expanded ? <ChevronUp size={18} className="text-stone-400" /> : <ChevronDown size={18} className="text-stone-400" />}
       </div>
 
       {expanded && (
-        <div className="p-4 border-t space-y-3" style={{ borderColor: '#e5e5e0' }}>
+        <div className="p-4 border-t space-y-3" style={{ borderColor: 'var(--border)' }}>
           {/* Tip */}
           <div>
-            <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Tip elementa</label>
-            <select value={pos.type} onChange={e => onChange({ ...newPosition(e.target.value, lang), id: pos.id, quantity: pos.quantity, unitPrice: pos.unitPrice })} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }}>
+            <label className="block text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Tip elementa</label>
+            <select value={pos.type} onChange={e => onChange({ ...newPosition(e.target.value, lang), id: pos.id, quantity: pos.quantity, unitPrice: pos.unitPrice })} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }}>
               {ELEMENT_TYPES.map(t => (
                 <option key={t.id} value={t.id}>{t.name}</option>
               ))}
@@ -74,12 +74,12 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
           {/* Dimenzije */}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Širina (mm)</label>
-              <input type="number" value={pos.width} onChange={e => update('width', +e.target.value)} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+              <label className="block text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Širina (mm)</label>
+              <input type="number" value={pos.width} onChange={e => update('width', +e.target.value)} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
             </div>
             <div>
-              <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Visina (mm)</label>
-              <input type="number" value={pos.height} onChange={e => update('height', +e.target.value)} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+              <label className="block text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Visina (mm)</label>
+              <input type="number" value={pos.height} onChange={e => update('height', +e.target.value)} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
               {pos.hasShutter && (
                 <div className="text-[10px] text-stone-400 mt-1">
                   Ukupna vanjska visina: {pos.height + (pos.shutterBoxHeight || 200)} mm
@@ -106,9 +106,9 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
                 <label className="block text-xs uppercase tracking-wider text-stone-500">Otvaranje po panelima</label>
                 {po.map((op, i) => (
                   <div key={i}>
-                    <label className="block text-[10px] text-stone-500 mb-0.5">Panel {i + 1}</label>
+                    <label className="block text-[10px] mb-0.5" style={{ color: 'var(--text-muted)' }}>Panel {i + 1}</label>
                     <select value={op} onChange={e => updatePO(i, e.target.value)}
-                      className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }}>
+                      className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }}>
                       <option value="leftTT">Lijevo (kip+otv)</option>
                       <option value="rightTT">Desno (kip+otv)</option>
                       <option value="leftOpen">Lijevo (samo otv)</option>
@@ -124,8 +124,8 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
             );
           })() : (
             <div>
-              <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Otvaranje</label>
-              <select value={pos.opening} onChange={e => update('opening', e.target.value)} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }}>
+              <label className="block text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Otvaranje</label>
+              <select value={pos.opening} onChange={e => update('opening', e.target.value)} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }}>
                 {pos.type === 'entryDoor' ? (
                   <>
                     <option value="rightDoor">Otvaranje desno (šarke lijevo)</option>
@@ -168,7 +168,7 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
             };
             return (
               <div>
-                <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">
+                <label className="block text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>
                   Podjela: {w1} / {w2} mm
                 </label>
                 <div className="flex items-center gap-2">
@@ -177,7 +177,7 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
                   <MmInput value={w1} onChange={setMm}
                     min={Math.round(pos.width * 0.2)} max={Math.round(pos.width * 0.8)}
                     className="w-20 px-2 py-1 border text-sm text-right shrink-0"
-                    style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                    style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
                 </div>
               </div>
             );
@@ -212,7 +212,7 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
             return (
               <div className="space-y-2">
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">
+                  <label className="block text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>
                     Prva podjela: {w1} / {w2 + w3} mm
                   </label>
                   <div className="flex items-center gap-2">
@@ -221,11 +221,11 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
                     <MmInput value={w1} onChange={setDiv0Mm}
                       min={Math.round(pos.width * 0.1)} max={Math.round(pos.width * 0.8)}
                       className="w-20 px-2 py-1 border text-sm text-right shrink-0"
-                      style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                      style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">
+                  <label className="block text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>
                     Druga podjela: {w2} / {w3} mm
                   </label>
                   <div className="flex items-center gap-2">
@@ -234,7 +234,7 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
                     <MmInput value={w2} onChange={setDiv1Mm}
                       min={Math.round((pos.width - w1) * 0.1)} max={Math.round((pos.width - w1) * 0.9)}
                       className="w-20 px-2 py-1 border text-sm text-right shrink-0"
-                      style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                      style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
                   </div>
                 </div>
                 <div className="text-[10px] text-stone-400" style={{ fontFamily: 'Geist Mono, ui-monospace, monospace' }}>
@@ -247,8 +247,8 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
           {/* Visina nadsvjetla */}
           {pos.type === 'transom' && (
             <div>
-              <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Visina nadsvjetla (mm)</label>
-              <input type="number" value={pos.transomHeight || 400} onChange={e => update('transomHeight', +e.target.value)} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+              <label className="block text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Visina nadsvjetla (mm)</label>
+              <input type="number" value={pos.transomHeight || 400} onChange={e => update('transomHeight', +e.target.value)} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
             </div>
           )}
 
@@ -269,11 +269,11 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
                 </div>
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Širina bočnog svjetla (mm)</label>
+                <label className="block text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Širina bočnog svjetla (mm)</label>
                 <input type="number" value={pos.sideLightWidth || 500}
                   onChange={e => update('sideLightWidth', +e.target.value)}
                   min="300" max="1000"
-                  className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                  className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
               </div>
             </div>
           )}
@@ -281,10 +281,10 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
           {/* Visina panela */}
           {pos.type === 'panelCombo' && (
             <div>
-              <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Visina panela (mm)</label>
+              <label className="block text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Visina panela (mm)</label>
               <input type="number" value={pos.panelHeight || 900} onChange={e => update('panelHeight', +e.target.value)}
                 min="300" max="1500"
-                className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
             </div>
           )}
 
@@ -311,7 +311,7 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
                   <label className="block text-xs text-stone-500 mb-1">Visina staklenog dijela (mm)</label>
                   <input type="number" value={pos.glassPanelHeight || 600}
                     onChange={e => update('glassPanelHeight', +e.target.value)}
-                    className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                    className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
                 </div>
               )}
             </div>
@@ -320,36 +320,36 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
           {/* Količina i cijena */}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Količina</label>
-              <NumInput value={pos.quantity} onChange={v => update('quantity', Math.max(1, v || 1))} min={1} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+              <label className="block text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Količina</label>
+              <NumInput value={pos.quantity} onChange={v => update('quantity', Math.max(1, v || 1))} min={1} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
             </div>
             <div>
-              <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">Cijena/kom</label>
-              <NumInput value={pos.unitPrice} onChange={v => update('unitPrice', v ?? 0)} step={0.01} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+              <label className="block text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Cijena/kom</label>
+              <NumInput value={pos.unitPrice} onChange={v => update('unitPrice', v ?? 0)} step={0.01} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
             </div>
           </div>
 
           {/* Detalji */}
           <details className="text-xs">
-            <summary className="cursor-pointer text-stone-500 uppercase tracking-wider">Detalji proizvoda (sistem, okov, staklo...)</summary>
+            <summary className="cursor-pointer uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Detalji proizvoda (sistem, okov, staklo...)</summary>
             <div className="space-y-2 mt-2">
-              <input value={pos.systemName} onChange={e => update('systemName', e.target.value)} placeholder="Sistem" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
-              <input value={pos.fitting} onChange={e => update('fitting', e.target.value)} placeholder="Okov" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
-              <input value={pos.color} onChange={e => update('color', e.target.value)} placeholder="Boja" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
-              <input value={pos.glass} onChange={e => update('glass', e.target.value)} placeholder="Staklo" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
+              <input value={pos.systemName} onChange={e => update('systemName', e.target.value)} placeholder="Sistem" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }} />
+              <input value={pos.fitting} onChange={e => update('fitting', e.target.value)} placeholder="Okov" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }} />
+              <input value={pos.color} onChange={e => update('color', e.target.value)} placeholder="Boja" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }} />
+              <input value={pos.glass} onChange={e => update('glass', e.target.value)} placeholder="Staklo" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }} />
               <div className="grid grid-cols-2 gap-2">
-                <input value={pos.frameProfile} onChange={e => update('frameProfile', e.target.value)} placeholder="Profil rama" className="px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
-                <input type="number" value={pos.frameDepth} onChange={e => update('frameDepth', +e.target.value)} placeholder="Dubina rama" className="px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
-                <input value={pos.sashProfile} onChange={e => update('sashProfile', e.target.value)} placeholder="Profil krila" className="px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
-                <input type="number" value={pos.sashDepth} onChange={e => update('sashDepth', +e.target.value)} placeholder="Dubina krila" className="px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
+                <input value={pos.frameProfile} onChange={e => update('frameProfile', e.target.value)} placeholder="Profil rama" className="px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }} />
+                <input type="number" value={pos.frameDepth} onChange={e => update('frameDepth', +e.target.value)} placeholder="Dubina rama" className="px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }} />
+                <input value={pos.sashProfile} onChange={e => update('sashProfile', e.target.value)} placeholder="Profil krila" className="px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }} />
+                <input type="number" value={pos.sashDepth} onChange={e => update('sashDepth', +e.target.value)} placeholder="Dubina krila" className="px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }} />
               </div>
-              <textarea value={pos.accessories.join('\n')} onChange={e => update('accessories', e.target.value.split('\n').filter(Boolean))} placeholder="Dodatni profili / pribor (jedna stavka po liniji)" rows="3" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
+              <textarea value={pos.accessories.join('\n')} onChange={e => update('accessories', e.target.value.split('\n').filter(Boolean))} placeholder="Dodatni profili / pribor (jedna stavka po liniji)" rows="3" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }} />
             </div>
           </details>
 
           {/* Roletna */}
           <details className="text-xs">
-            <summary className="cursor-pointer text-stone-500 uppercase tracking-wider">Roletna</summary>
+            <summary className="cursor-pointer uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Roletna</summary>
             <div className="space-y-2 mt-2">
               {(() => {
                 const count = getPanelCount(pos.type);
@@ -397,7 +397,7 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
                       <input type="number" value={pos.shutterBoxHeight || 200}
                         onChange={e => update('shutterBoxHeight', +e.target.value)}
                         min="100" max="300" step="5"
-                        className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
+                        className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }} />
                     </div>
                     <div className="flex gap-4">
                       {[['outside', 'Vanjska kutija'], ['inside', 'Unutarnja kutija']].map(([v, label]) => (
@@ -411,7 +411,7 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
                     </div>
                     <select value={pos.shutterControl || 'belt'}
                       onChange={e => update('shutterControl', e.target.value)}
-                      className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }}>
+                      className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }}>
                       <option value="belt">Upravljanje: Traka (gurtna)</option>
                       <option value="crank">Upravljanje: Ručica</option>
                       <option value="motor">Upravljanje: Motor</option>
@@ -420,7 +420,7 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
                       <label className="block text-stone-400 mb-1">Cijena roletne (po kom)</label>
                       <NumInput value={pos.shutterPrice || 0} onChange={v => update('shutterPrice', v ?? 0)}
                         step={0.01} className="w-full px-2 py-1.5 border text-sm"
-                        style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                        style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
                     </div>
                   </>)}
                 </>);
@@ -430,7 +430,7 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
 
           {/* Mreža protiv insekata */}
           <details className="text-xs">
-            <summary className="cursor-pointer text-stone-500 uppercase tracking-wider">Mreža protiv insekata</summary>
+            <summary className="cursor-pointer uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Mreža protiv insekata</summary>
             <div className="space-y-2 mt-2">
               <label className="flex items-center gap-2">
                 <input type="checkbox" checked={pos.hasMosquitoNet || false}
@@ -440,7 +440,7 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
               {pos.hasMosquitoNet && (
                 <select value={pos.mosquitoNetType || 'harmo'}
                   onChange={e => update('mosquitoNetType', e.target.value)}
-                  className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }}>
+                  className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }}>
                   <option value="harmo">Harmo (plisirana)</option>
                   <option value="roller">Roletna mreža</option>
                   <option value="fixed">Fiksna mreža</option>
@@ -450,7 +450,7 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
           </details>
 
           {/* Akcije */}
-          <div className="flex flex-wrap gap-2 pt-2 border-t" style={{ borderColor: '#e5e5e0' }}>
+          <div className="flex flex-wrap gap-2 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
             <button onClick={onDuplicate} className="flex items-center gap-1 text-xs text-stone-600 hover:text-stone-900 px-2 py-1">
               <Copy size={12} /> Dupliciraj
             </button>
@@ -461,7 +461,7 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
               <div className="flex items-center gap-1 w-full mt-1">
                 <input autoFocus value={tplName} onChange={e => setTplName(e.target.value)}
                   placeholder="Ime template-a"
-                  className="flex-1 px-2 py-1 border text-xs" style={{ borderColor: '#d4d4cf' }} />
+                  className="flex-1 px-2 py-1 border text-xs" style={{ borderColor: 'var(--input-border)' }} />
                 <button onClick={() => { if (tplName.trim()) { saveTemplate(tplName.trim(), pos); } setShowSaveTpl(false); setTplName(''); }}
                   className="text-xs px-2 py-1 text-white" style={{ background: '#1f3a5f' }}>OK</button>
                 <button onClick={() => { setShowSaveTpl(false); setTplName(''); }}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { getCustomers, saveCustomer, deleteCustomer } from './utils/customers';
 
 const EMPTY_FORM = {
@@ -70,8 +70,8 @@ export default function CustomersManager() {
       style={{ minHeight: 'calc(100vh - 57px)', fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* LIJEVI PANEL */}
-      <div className="border-r flex flex-col" style={{ borderColor: '#e5e5e0', background: 'white' }}>
-        <div className="p-4 border-b" style={{ borderColor: '#e5e5e0' }}>
+      <div className="border-r flex flex-col" style={{ borderColor: 'var(--border)', background: 'var(--panel-bg)' }}>
+        <div className="p-4 border-b" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between mb-3">
             <div className="text-xs uppercase tracking-wider text-stone-500">
               Kupci ({customers.length})
@@ -87,7 +87,7 @@ export default function CustomersManager() {
             onChange={e => setSearch(e.target.value)}
             placeholder="Pretraga..."
             className="w-full px-2 py-1.5 border text-xs"
-            style={{ borderColor: '#d4d4cf' }}
+            style={{ borderColor: 'var(--input-border)' }}
           />
         </div>
 
@@ -100,7 +100,7 @@ export default function CustomersManager() {
           {filtered.map(c => (
             <div key={c.id} onClick={() => selectCustomer(c)}
               className="px-4 py-3 border-b cursor-pointer"
-              style={{ borderColor: '#e5e5e0', background: c.id === selectedId ? '#eff6ff' : 'white' }}>
+              style={{ borderColor: 'var(--border)', background: c.id === selectedId ? 'var(--accent-bg)' : 'var(--panel-bg)' }}>
               <div className="text-sm font-medium truncate"
                 style={{ color: c.id === selectedId ? '#1f3a5f' : '#1a1a1a' }}>
                 {c.name || '—'}
@@ -121,20 +121,20 @@ export default function CustomersManager() {
           </div>
         ) : (
           <div className="max-w-lg">
-            <div className="bg-white border p-5 space-y-4" style={{ borderColor: '#e5e5e0' }}>
+            <div className="border p-5 space-y-4" style={{ borderColor: 'var(--border)' }}>
 
               {/* Ime */}
               <div>
                 <label className="block text-[10px] uppercase tracking-wider text-stone-500 mb-1">Ime *</label>
                 <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                  className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
+                  className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }} />
               </div>
 
               {/* Adresa */}
               <div>
                 <label className="block text-[10px] uppercase tracking-wider text-stone-500 mb-1">Adresa</label>
                 <textarea value={form.address} onChange={e => setForm({ ...form, address: e.target.value })}
-                  rows={3} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
+                  rows={3} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }} />
               </div>
 
               {/* Telefon + Email */}
@@ -142,12 +142,12 @@ export default function CustomersManager() {
                 <div>
                   <label className="block text-[10px] uppercase tracking-wider text-stone-500 mb-1">Telefon</label>
                   <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
-                    className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
+                    className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }} />
                 </div>
                 <div>
                   <label className="block text-[10px] uppercase tracking-wider text-stone-500 mb-1">Email</label>
                   <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
-                    className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
+                    className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }} />
                 </div>
               </div>
 
@@ -196,11 +196,11 @@ export default function CustomersManager() {
                   <span className="normal-case font-normal text-stone-400">(samo interno — ne vidi se na ponudi)</span>
                 </label>
                 <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })}
-                  rows={3} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf' }} />
+                  rows={3} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }} />
               </div>
 
               {/* Akcije */}
-              <div className="flex items-center gap-3 pt-2 border-t" style={{ borderColor: '#e5e5e0' }}>
+              <div className="flex items-center gap-3 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
                 <button onClick={handleSave}
                   className="px-4 py-1.5 text-xs text-white"
                   style={{ background: '#1f3a5f' }}>
