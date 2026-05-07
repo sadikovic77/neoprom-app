@@ -9,7 +9,7 @@ export default function PdfPreview({ doc, lang, currency, showPrices }) {
   const opLabel = OPENING_LABEL[lang];
 
   const totalNet = useMemo(
-    () => doc.positions.reduce((s, p) => s + (p.unitPrice || 0) * (p.quantity || 1), 0),
+    () => doc.positions.reduce((s, p) => s + ((p.unitPrice || 0) + (p.shutterPrice || 0)) * (p.quantity || 1), 0),
     [doc.positions]
   );
   const explicitNet = doc.netOverride && doc.netOverride > 0 ? doc.netOverride : null;
@@ -135,9 +135,10 @@ export default function PdfPreview({ doc, lang, currency, showPrices }) {
               <>
                 <div className="w-20 shrink-0 text-right pt-1" style={{ fontFamily: 'Geist Mono, ui-monospace, monospace' }}>
                   {p.unitPrice ? fmt(p.unitPrice, currency) : '—'}
+                  {p.shutterPrice > 0 && <div className="text-stone-400 text-[9px]">+{fmt(p.shutterPrice, currency)}</div>}
                 </div>
                 <div className="w-24 shrink-0 text-right pt-1 font-medium" style={{ fontFamily: 'Geist Mono, ui-monospace, monospace' }}>
-                  {p.unitPrice ? fmt(p.unitPrice * p.quantity, currency) : '—'}
+                  {(p.unitPrice || p.shutterPrice) ? fmt(((p.unitPrice || 0) + (p.shutterPrice || 0)) * p.quantity, currency) : '—'}
                 </div>
               </>
             )}

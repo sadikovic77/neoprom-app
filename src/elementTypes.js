@@ -41,6 +41,7 @@ export const newPosition = (type = 'single', lang = 'bs') => {
     shutterBoxHeight: 200,
     shutterBoxType: 'outside',
     shutterControl: 'belt',
+    shutterPrice: 0,
     hasMosquitoNet: false,
     mosquitoNetType: 'harmo',
   };

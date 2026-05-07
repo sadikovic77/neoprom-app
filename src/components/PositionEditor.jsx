@@ -416,6 +416,12 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
                       <option value="crank">Upravljanje: Ručica</option>
                       <option value="motor">Upravljanje: Motor</option>
                     </select>
+                    <div>
+                      <label className="block text-stone-400 mb-1">Cijena roletne (po kom)</label>
+                      <NumInput value={pos.shutterPrice || 0} onChange={v => update('shutterPrice', v ?? 0)}
+                        step={0.01} className="w-full px-2 py-1.5 border text-sm"
+                        style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                    </div>
                   </>)}
                 </>);
               })()}
