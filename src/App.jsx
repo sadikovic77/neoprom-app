@@ -36,6 +36,7 @@ const createEmptyDoc = (quotes = []) => ({
   vatRate: 17,
   vatEnabled: true,
   customNotes: '',
+  advanceRate: 70,
   docNotes: null,
   docPayTerms: null,
   showMontage: true,
@@ -458,6 +459,15 @@ export default function App() {
                       className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
                   </div>
                 )}
+              </div>
+
+              {/* Avans */}
+              <div className="bg-white border p-4" style={{ borderColor: '#e5e5e0' }}>
+                <label className="block text-[10px] uppercase tracking-wider text-stone-500 mb-1">Avans (%)</label>
+                <input type="number" value={doc.advanceRate ?? 70}
+                  onChange={e => setDoc({ ...doc, advanceRate: +e.target.value })}
+                  min="0" max="100" step="5"
+                  className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
               </div>
 
               {/* Napomene */}

@@ -170,19 +170,32 @@ export default function PdfPreview({ doc, lang, currency, showPrices }) {
               <div><span className="font-semibold">{t.payMethod}:</span> {doc.paymentMethodText ?? t.cash}</div>
             </div>
             <div className="text-right">
-              <table style={{ fontFamily: 'Geist Mono, ui-monospace, monospace' }} className="text-[11px]">
-                <tbody>
-                  {vatEnabled ? (
-                    <>
-                      <tr><td className="pr-6 text-stone-600">{t.net}:</td><td className="text-right">{fmt(finalNet, currency)}</td></tr>
-                      <tr><td className="pr-6 text-stone-600">{t.vat(vatRate)}:</td><td className="text-right">{fmt(vat, currency)}</td></tr>
-                      <tr className="text-base font-semibold border-t" style={{ borderColor: '#1a1a1a' }}><td className="pr-6 pt-1">{t.gross}:</td><td className="text-right pt-1">{fmt(gross, currency)}</td></tr>
-                    </>
-                  ) : (
-                    <tr className="text-base font-semibold"><td className="pr-6">{t.total}:</td><td className="text-right">{fmt(finalNet, currency)}</td></tr>
-                  )}
-                </tbody>
-              </table>
+              {(() => {
+                const advRate = doc.advanceRate ?? 70;
+                const finalTotal = vatEnabled ? gross : finalNet;
+                const advAmount = finalTotal * advRate / 100;
+                const remAmount = finalTotal - advAmount;
+                return (
+                  <table style={{ fontFamily: 'Geist Mono, ui-monospace, monospace' }} className="text-[11px]">
+                    <tbody>
+                      {vatEnabled ? (
+                        <>
+                          <tr><td className="pr-6 text-stone-600">{t.net}:</td><td className="text-right">{fmt(finalNet, currency)}</td></tr>
+                          <tr><td className="pr-6 text-stone-600">{t.vat(vatRate)}:</td><td className="text-right">{fmt(vat, currency)}</td></tr>
+                          <tr className="text-base font-semibold border-t" style={{ borderColor: '#1a1a1a' }}><td className="pr-6 pt-1">{t.gross}:</td><td className="text-right pt-1">{fmt(gross, currency)}</td></tr>
+                        </>
+                      ) : (
+                        <tr className="text-base font-semibold"><td className="pr-6">{t.total}:</td><td className="text-right">{fmt(finalNet, currency)}</td></tr>
+                      )}
+                      {advRate > 0 && advRate < 100 && <>
+                        <tr><td colSpan={2} className="pt-3 pb-1 border-t" style={{ borderColor: '#e5e5e0' }}></td></tr>
+                        <tr><td className="pr-6 text-stone-600">{t.advance(advRate)}:</td><td className="text-right font-medium">{fmt(advAmount, currency)}</td></tr>
+                        <tr><td className="pr-6 text-stone-600">{t.remainder(100 - advRate)}:</td><td className="text-right font-medium">{fmt(remAmount, currency)}</td></tr>
+                      </>}
+                    </tbody>
+                  </table>
+                );
+              })()}
             </div>
           </div>
         </div>
