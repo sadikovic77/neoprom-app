@@ -437,38 +437,45 @@ export default function App() {
               </div>
 
               {/* Override neta */}
-              <div className="bg-white border p-4" style={{ borderColor: '#e5e5e0' }}>
-                <label className="block text-[10px] uppercase tracking-wider text-stone-500 mb-1">Neto override (ostavi prazno za auto)</label>
-                <input type="number" value={doc.netOverride || ''} onChange={e => setDoc({ ...doc, netOverride: +e.target.value })} placeholder="Auto-zbroj iz pozicija" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
-              </div>
+              <details className="bg-white border" style={{ borderColor: '#e5e5e0' }}>
+                <summary className="px-4 py-3 cursor-pointer text-[10px] uppercase tracking-wider text-stone-500 select-none">Neto override</summary>
+                <div className="px-4 pb-4">
+                  <input type="number" value={doc.netOverride || ''} onChange={e => setDoc({ ...doc, netOverride: +e.target.value })} placeholder="Auto-zbroj iz pozicija" className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                </div>
+              </details>
 
               {/* PDV */}
-              <div className="bg-white border p-4" style={{ borderColor: '#e5e5e0' }}>
-                <div className="text-xs uppercase tracking-wider text-stone-500 mb-2">PDV</div>
-                <label className="flex items-center gap-2 text-xs mb-2 cursor-pointer">
-                  <input type="checkbox" checked={doc.vatEnabled ?? true}
-                    onChange={e => setDoc({ ...doc, vatEnabled: e.target.checked })} />
-                  Obračunaj PDV
-                </label>
-                {(doc.vatEnabled ?? true) && (
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-wider text-stone-500 mb-1">Stopa PDV-a (%)</label>
-                    <input type="number" value={doc.vatRate ?? 17}
-                      onChange={e => setDoc({ ...doc, vatRate: +e.target.value })}
-                      min="0" max="30" step="0.5"
-                      className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
-                  </div>
-                )}
-              </div>
+              <details className="bg-white border" style={{ borderColor: '#e5e5e0' }}>
+                <summary className="px-4 py-3 cursor-pointer text-[10px] uppercase tracking-wider text-stone-500 select-none">PDV</summary>
+                <div className="px-4 pb-4 space-y-2">
+                  <label className="flex items-center gap-2 text-xs cursor-pointer">
+                    <input type="checkbox" checked={doc.vatEnabled ?? true}
+                      onChange={e => setDoc({ ...doc, vatEnabled: e.target.checked })} />
+                    Obračunaj PDV
+                  </label>
+                  {(doc.vatEnabled ?? true) && (
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-stone-500 mb-1">Stopa PDV-a (%)</label>
+                      <input type="number" value={doc.vatRate ?? 17}
+                        onChange={e => setDoc({ ...doc, vatRate: +e.target.value })}
+                        min="0" max="30" step="0.5"
+                        className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                    </div>
+                  )}
+                </div>
+              </details>
 
               {/* Avans */}
-              <div className="bg-white border p-4" style={{ borderColor: '#e5e5e0' }}>
-                <label className="block text-[10px] uppercase tracking-wider text-stone-500 mb-1">Avans (%)</label>
-                <input type="number" value={doc.advanceRate ?? 70}
-                  onChange={e => setDoc({ ...doc, advanceRate: +e.target.value })}
-                  min="0" max="100" step="5"
-                  className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
-              </div>
+              <details className="bg-white border" style={{ borderColor: '#e5e5e0' }}>
+                <summary className="px-4 py-3 cursor-pointer text-[10px] uppercase tracking-wider text-stone-500 select-none">Avans</summary>
+                <div className="px-4 pb-4">
+                  <label className="block text-[10px] uppercase tracking-wider text-stone-500 mb-1">Avans (%)</label>
+                  <input type="number" value={doc.advanceRate ?? 70}
+                    onChange={e => setDoc({ ...doc, advanceRate: +e.target.value })}
+                    min="0" max="100" step="5"
+                    className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: '#d4d4cf', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                </div>
+              </details>
 
               {/* Napomene */}
               <NotesEditor doc={doc} setDoc={setDoc} lang={lang} />
