@@ -252,9 +252,9 @@ export default function WindowDrawing({ pos, size = 360, showDims = true }) {
         <polyline points={`${slideCx + 10},${slideCy - 4} ${slideCx + 15},${slideCy} ${slideCx + 10},${slideCy + 4}`} />
       </g>
     );
-  } else if (pos.type === 'entryDoor') {
+  } else if (pos.type === 'entryDoor' || pos.type === 'entryDoorGlassTop' || pos.type === 'entryDoorGlassMid') {
     const sashF = 50 * scale;
-    const doorPanel = pos.doorPanel || 'fullPanel';
+    const doorPanel = pos.doorPanel || (pos.type === 'entryDoorGlassTop' ? 'panelGlass' : pos.type === 'entryDoorGlassMid' ? 'glassMid' : 'fullPanel');
     const gx = innerX + sashF;
     const gy = innerY + sashF;
     const gw = innerW - 2 * sashF;
@@ -269,6 +269,35 @@ export default function WindowDrawing({ pos, size = 360, showDims = true }) {
       elements.push(<rect key="ed-glass" x={gx} y={gy} width={gw} height={glassH} fill="#dbeafe" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.8" />);
       elements.push(<rect key="ed-panel" x={gx} y={gy + glassH} width={gw} height={gh - glassH} fill="#e8e4dc" stroke="#1a1a1a" strokeWidth="0.4" />);
       elements.push(<line key="ed-div" x1={gx} y1={gy + glassH} x2={gx + gw} y2={gy + glassH} stroke="#1a1a1a" strokeWidth="0.7" />);
+    } else if (doorPanel === 'glassMid') {
+      const midOffset = Math.min((pos.glassMidOffset || 700) * scale, gh - 20 * scale);
+      const midH = Math.min((pos.glassMidHeight || 400) * scale, gh - midOffset - 10 * scale);
+      elements.push(<rect key="ed-top" x={gx} y={gy} width={gw} height={midOffset} fill="#e8e4dc" stroke="#1a1a1a" strokeWidth="0.4" />);
+      elements.push(<rect key="ed-glass" x={gx} y={gy + midOffset} width={gw} height={midH} fill="#dbeafe" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.8" />);
+      elements.push(<rect key="ed-bot" x={gx} y={gy + midOffset + midH} width={gw} height={gh - midOffset - midH} fill="#e8e4dc" stroke="#1a1a1a" strokeWidth="0.4" />);
+      elements.push(<line key="ed-div1" x1={gx} y1={gy + midOffset} x2={gx + gw} y2={gy + midOffset} stroke="#1a1a1a" strokeWidth="0.7" />);
+      elements.push(<line key="ed-div2" x1={gx} y1={gy + midOffset + midH} x2={gx + gw} y2={gy + midOffset + midH} stroke="#1a1a1a" strokeWidth="0.7" />);
+    } else if (doorPanel === 'glassTwice') {
+      const gap = gh / 3;
+      const glH = Math.min((pos.glassPanelHeight || 350) * scale, gap - 10 * scale);
+      const topY = gy + gap / 2 - glH / 2;
+      const botY = gy + gap * 1.5 + gap / 2 - glH / 2;
+      elements.push(<rect key="ed-bg" x={gx} y={gy} width={gw} height={gh} fill="#e8e4dc" stroke="#1a1a1a" strokeWidth="0.4" />);
+      elements.push(<rect key="ed-g1" x={gx + 4 * scale} y={topY} width={gw - 8 * scale} height={glH} fill="#dbeafe" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.8" />);
+      elements.push(<rect key="ed-g2" x={gx + 4 * scale} y={botY} width={gw - 8 * scale} height={glH} fill="#dbeafe" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.8" />);
+    } else if (doorPanel === 'glassBottom') {
+      const glassH = Math.min((pos.glassPanelHeight || 600) * scale, gh - 10 * scale);
+      const panelH = gh - glassH;
+      elements.push(<rect key="ed-panel" x={gx} y={gy} width={gw} height={panelH} fill="#e8e4dc" stroke="#1a1a1a" strokeWidth="0.4" />);
+      elements.push(<rect key="ed-glass" x={gx} y={gy + panelH} width={gw} height={glassH} fill="#dbeafe" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.8" />);
+      elements.push(<line key="ed-div" x1={gx} y1={gy + panelH} x2={gx + gw} y2={gy + panelH} stroke="#1a1a1a" strokeWidth="0.7" />);
+    } else if (doorPanel === 'glassSide') {
+      const sw = Math.min((pos.glassSideWidth || 80) * scale, gw / 3);
+      const glassH = Math.min((pos.glassPanelHeight || 1200) * scale, gh - 10 * scale);
+      const glassY = gy + (gh - glassH) / 2;
+      elements.push(<rect key="ed-bg" x={gx} y={gy} width={gw} height={gh} fill="#e8e4dc" stroke="#1a1a1a" strokeWidth="0.4" />);
+      elements.push(<rect key="ed-gl" x={gx + 4 * scale} y={glassY} width={sw} height={glassH} fill="#dbeafe" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.8" />);
+      elements.push(<rect key="ed-gr" x={gx + gw - sw - 4 * scale} y={glassY} width={sw} height={glassH} fill="#dbeafe" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.8" />);
     }
     const knobY = winY0 + h - 1050 * scale;
     const knobW = 60 * scale;

@@ -55,7 +55,9 @@ export const newPosition = (type = 'single', lang = 'bs') => {
     case 'transom': return { ...base, height: 1800, opening: 'rightTT', transomHeight: 400 };
     case 'triple': return { ...base, width: 2100, height: 1400, opening: 'rightTT', divisions: [0.33, 0.33, 0.34], panelOpenings: ['leftTT', 'fixed', 'rightTT'] };
     case 'doubleDoor': return { ...base, width: 1800, height: 2100, opening: 'bothTT', divisionRatio: 0.5, panelOpenings: ['leftTT', 'rightTT'] };
-    case 'entryDoor': return { ...base, width: 1000, height: 2100, opening: 'rightDoor', doorPanel: 'fullPanel', hasGlassPanel: false, glassPanelHeight: 600 };
+    case 'entryDoor': return { ...base, width: 1000, height: 2100, opening: 'rightDoor', doorPanel: 'fullPanel', glassPanelHeight: 600, glassMidHeight: 400, glassMidOffset: 700 };
+    case 'entryDoorGlassTop': return { ...base, width: 1000, height: 2100, opening: 'rightDoor', doorPanel: 'panelGlass', glassPanelHeight: 600, glassMidHeight: 400, glassMidOffset: 700 };
+    case 'entryDoorGlassMid': return { ...base, width: 1000, height: 2100, opening: 'rightDoor', doorPanel: 'glassMid', glassPanelHeight: 600, glassMidHeight: 400, glassMidOffset: 700 };
     case 'sliding3': return { ...base, width: 4500, height: 2400, opening: 'centerSlide', divisions: [0.33, 0.34, 0.33], sashDepth: 104 };
     case 'panelCombo': return { ...base, width: 1500, height: 2000, opening: 'rightTT', panelHeight: 900 };
     case 'sideLight': return { ...base, width: 1800, height: 2100, opening: 'rightTT', sideLightPosition: 'right', sideLightWidth: 500, panelOpenings: ['rightTT', 'fixed'] };

@@ -396,7 +396,7 @@ export default function App() {
                         Iz template-a
                       </button>
                       {showTemplateMenu && (
-                        <div className="absolute right-0 top-full mt-1 border shadow-lg z-20 w-56" style={{ borderColor: 'var(--input-border)' }}>
+                        <div className="absolute right-0 top-full mt-1 border shadow-lg z-20 w-56" style={{ borderColor: 'var(--input-border)', background: 'var(--panel-bg)', color: 'var(--text)' }}>
                           {templates.length === 0 ? (
                             <div className="px-3 py-2 text-xs text-stone-400">Nema spremljenih template-a</div>
                           ) : (
@@ -430,9 +430,9 @@ export default function App() {
                         <Plus size={12} /> Dodaj
                       </button>
                       {showAddMenu && (
-                        <div className="absolute right-0 top-full mt-1 border shadow-lg z-20" style={{ borderColor: 'var(--input-border)' }}>
+                        <div className="absolute right-0 top-full mt-1 border shadow-lg z-20" style={{ borderColor: 'var(--input-border)', background: 'var(--panel-bg)', color: 'var(--text)' }}>
                           {ELEMENT_TYPES.map(t => (
-                            <button key={t.id} onClick={() => addPos(t.id)} className="block w-full text-left px-3 py-2 text-xs hover:bg-stone-50 whitespace-nowrap">{t.name}</button>
+                            <button key={t.id} onClick={() => addPos(t.id)} className="block w-full text-left px-3 py-2 text-xs hover:bg-stone-50 whitespace-nowrap" style={{ color: 'var(--text)' }}>{t.name}</button>
                           ))}
                         </div>
                       )}

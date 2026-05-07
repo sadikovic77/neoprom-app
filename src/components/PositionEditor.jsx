@@ -126,7 +126,7 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
             <div>
               <label className="block text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Otvaranje</label>
               <select value={pos.opening} onChange={e => update('opening', e.target.value)} className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)' }}>
-                {pos.type === 'entryDoor' ? (
+                {['entryDoor', 'entryDoorGlassTop', 'entryDoorGlassMid'].includes(pos.type) ? (
                   <>
                     <option value="rightDoor">Otvaranje desno (šarke lijevo)</option>
                     <option value="leftDoor">Otvaranje lijevo (šarke desno)</option>
@@ -289,33 +289,88 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
           )}
 
           {/* Panel ulaznih vrata */}
-          {pos.type === 'entryDoor' && (
-            <div>
-              <label className="block text-xs uppercase tracking-wider text-stone-500 mb-2">Panel vrata</label>
-              <div className="space-y-1">
-                {[
-                  ['fullPanel', 'Puni PVC panel'],
-                  ['panelGlass', 'Panel + staklo'],
-                  ['glassFull', 'Staklo cijelom visinom'],
-                ].map(([v, label]) => (
-                  <label key={v} className="flex items-center gap-2 text-xs cursor-pointer">
-                    <input type="radio" name={`dp-${pos.id}`} value={v}
-                      checked={(pos.doorPanel || 'fullPanel') === v}
-                      onChange={() => update('doorPanel', v)} />
-                    {label}
-                  </label>
-                ))}
-              </div>
-              {(pos.doorPanel || 'fullPanel') === 'panelGlass' && (
-                <div className="mt-2">
-                  <label className="block text-xs text-stone-500 mb-1">Visina staklenog dijela (mm)</label>
-                  <input type="number" value={pos.glassPanelHeight || 600}
-                    onChange={e => update('glassPanelHeight', +e.target.value)}
-                    className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+          {['entryDoor', 'entryDoorGlassTop', 'entryDoorGlassMid'].includes(pos.type) && (() => {
+            const defaultPanel = pos.type === 'entryDoorGlassTop' ? 'panelGlass' : pos.type === 'entryDoorGlassMid' ? 'glassMid' : 'fullPanel';
+            const dp = pos.doorPanel || defaultPanel;
+            return (
+              <div>
+                <label className="block text-xs uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Panel vrata</label>
+                <div className="space-y-1">
+                  {[
+                    ['fullPanel', 'Puni PVC panel'],
+                    ['panelGlass', 'Staklo gore, panel dolje'],
+                    ['glassMid', 'Staklo u sredini'],
+                    ['glassBottom', 'Panel gore, staklo dolje'],
+                    ['glassTwice', 'Dva stakla'],
+                    ['glassSide', 'Uske bočne trake'],
+                    ['glassFull', 'Staklo cijelom visinom'],
+                  ].map(([v, label]) => (
+                    <label key={v} className="flex items-center gap-2 text-xs cursor-pointer">
+                      <input type="radio" name={`dp-${pos.id}`} value={v}
+                        checked={dp === v} onChange={() => update('doorPanel', v)} />
+                      {label}
+                    </label>
+                  ))}
                 </div>
-              )}
-            </div>
-          )}
+                {dp === 'panelGlass' && (
+                  <div className="mt-2">
+                    <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Visina stakla gore (mm)</label>
+                    <input type="number" value={pos.glassPanelHeight || 600}
+                      onChange={e => update('glassPanelHeight', +e.target.value)}
+                      className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                  </div>
+                )}
+                {dp === 'glassMid' && (
+                  <div className="mt-2 space-y-2">
+                    <div>
+                      <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Rastojanje od vrha do stakla (mm)</label>
+                      <input type="number" value={pos.glassMidOffset || 700}
+                        onChange={e => update('glassMidOffset', +e.target.value)}
+                        className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                    </div>
+                    <div>
+                      <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Visina stakla (mm)</label>
+                      <input type="number" value={pos.glassMidHeight || 400}
+                        onChange={e => update('glassMidHeight', +e.target.value)}
+                        className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                    </div>
+                  </div>
+                )}
+                {dp === 'glassBottom' && (
+                  <div className="mt-2">
+                    <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Visina stakla dolje (mm)</label>
+                    <input type="number" value={pos.glassPanelHeight || 600}
+                      onChange={e => update('glassPanelHeight', +e.target.value)}
+                      className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                  </div>
+                )}
+                {dp === 'glassTwice' && (
+                  <div className="mt-2">
+                    <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Visina svakog stakla (mm)</label>
+                    <input type="number" value={pos.glassPanelHeight || 350}
+                      onChange={e => update('glassPanelHeight', +e.target.value)}
+                      className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                  </div>
+                )}
+                {dp === 'glassSide' && (
+                  <div className="mt-2 space-y-2">
+                    <div>
+                      <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Širina bočnih traka (mm)</label>
+                      <input type="number" value={pos.glassSideWidth || 80}
+                        onChange={e => update('glassSideWidth', +e.target.value)}
+                        className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                    </div>
+                    <div>
+                      <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Visina stakla (mm)</label>
+                      <input type="number" value={pos.glassPanelHeight || 1200}
+                        onChange={e => update('glassPanelHeight', +e.target.value)}
+                        className="w-full px-2 py-1.5 border text-sm" style={{ borderColor: 'var(--input-border)', fontFamily: 'Geist Mono, ui-monospace, monospace' }} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Količina i cijena */}
           <div className="grid grid-cols-2 gap-2">
