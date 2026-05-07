@@ -361,15 +361,35 @@ export default function PositionEditor({ pos, onChange, onDelete, onDuplicate, o
                   const next = [...shutters]; next[i] = val;
                   onChange({ ...pos, shutters: next, hasShutter: next.some(Boolean) });
                 };
+                const allChecked = shutters.every(Boolean);
+                const toggleAll = () => {
+                  const next = Array(count).fill(!allChecked);
+                  if (count === 1) { update('hasShutter', !allChecked); return; }
+                  onChange({ ...pos, shutters: next, hasShutter: !allChecked, shutterWhole: !allChecked });
+                };
+                const updateShuttersIndividual = (i, val) => {
+                  const next = [...shutters]; next[i] = val;
+                  onChange({ ...pos, shutters: next, hasShutter: next.some(Boolean), shutterWhole: false });
+                };
                 return (<>
-                  <div className={count > 1 ? 'flex gap-4' : ''}>
-                    {shutters.map((s, i) => (
-                      <label key={i} className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" checked={s}
-                          onChange={e => updateShutters(i, e.target.checked)} />
-                        {panelLabels[i]}
+                  <div className={count > 1 ? 'space-y-1' : ''}>
+                    {count > 1 && (
+                      <label className="flex items-center gap-2 cursor-pointer font-medium">
+                        <input type="checkbox" checked={allChecked}
+                          ref={el => { if (el) el.indeterminate = anyShutter && !allChecked; }}
+                          onChange={toggleAll} />
+                        Cijeli element
                       </label>
-                    ))}
+                    )}
+                    <div className={count > 1 ? 'flex gap-4 ml-1' : ''}>
+                      {shutters.map((s, i) => (
+                        <label key={i} className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" checked={s}
+                            onChange={e => count === 1 ? updateShutters(i, e.target.checked) : updateShuttersIndividual(i, e.target.checked)} />
+                          {panelLabels[i]}
+                        </label>
+                      ))}
+                    </div>
                   </div>
                   {anyShutter && (<>
                     <div>

@@ -118,17 +118,28 @@ export default function WindowDrawing({ pos, size = 360, showDims = true }) {
     };
     const boxes = getPanelBoxes();
     const fill = pos.shutterBoxType === 'inside' ? '#f0f0f0' : 'white';
+    const allOn = pos.shutterWhole && panelShutters.every(Boolean);
+    const lamelCount = Math.max(2, Math.floor(shutterH / 6));
+
+    const drawShutterRect = (px, pw, key) => (
+      <g key={key}>
+        <rect x={px} y={y0} width={pw} height={shutterH} fill={fill} stroke="#1a1a1a" strokeWidth="1.2" />
+        {Array.from({ length: lamelCount }).map((_, li) => {
+          const ly = y0 + (shutterH / (lamelCount + 1)) * (li + 1);
+          return <line key={li} x1={px + 2} y1={ly} x2={px + pw - 2} y2={ly}
+            stroke="#aaaaaa" strokeWidth="0.5" />;
+        })}
+        <text x={px + pw / 2} y={y0 + shutterH / 2 + 2.5}
+          textAnchor="middle" fontSize="7" fill="#555555" fontWeight="bold">ROL</text>
+      </g>
+    );
+
     elements.push(
       <g key="shutter-box">
-        {boxes.map(({ px, pw }, i) => panelShutters[i] && (
-          <g key={i}>
-            <rect x={px} y={y0} width={pw} height={shutterH} fill={fill} stroke="#1a1a1a" strokeWidth="1.2" />
-            <line x1={px} y1={y0 + shutterH / 2} x2={px + pw} y2={y0 + shutterH / 2}
-              stroke="#1a1a1a" strokeWidth="0.4" strokeDasharray="3,2" />
-            <text x={px + pw / 2} y={y0 + shutterH / 2 + 2.5}
-              textAnchor="middle" fontSize="7" fill="#1a1a1a">ROL</text>
-          </g>
-        ))}
+        {allOn
+          ? drawShutterRect(x0, w, 'all')
+          : boxes.map(({ px, pw }, i) => panelShutters[i] && drawShutterRect(px, pw, i))
+        }
       </g>
     );
   }
