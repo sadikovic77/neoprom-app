@@ -245,7 +245,7 @@ export default function App() {
           <div className="px-6 py-3 flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <img src="/neoprom-icon.svg" alt="Neoprom" style={{ height: '28px', display: 'block' }} />
-              <div className="font-medium tracking-tight" style={{ color: 'var(--text)' }}>Generator ponuda <span className="text-xs ml-1" style={{ color: 'var(--text-subtle)' }}>v0.1</span></div>
+              <div className="font-medium tracking-tight" style={{ color: 'var(--text)' }}>Generator ponuda <span className="text-xs ml-1" style={{ color: 'var(--text-subtle)' }}>v1.0</span></div>
             </div>
             <div className="flex items-center gap-1 ml-2">
               {[['quotes', 'Ponude'], ['customers', 'Kupci']].map(([v, label]) => (
@@ -540,7 +540,7 @@ export default function App() {
         </div>}
 
         <div className="shrink-0 text-center text-[10px] text-stone-400 py-4 border-t" style={{ borderColor: 'var(--border)' }}>
-          Demo · Neoprom Engineering · Generator ponuda v0.1
+          Neoprom Engineering · Generator ponuda v1.0
         </div>
       </div>
     </>
